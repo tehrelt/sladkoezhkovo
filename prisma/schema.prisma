@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model City {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name      String     @unique
+  districts District[]
+  factories Factory[]
+
+  @@map("cities")
+}
+
+model PropertyType {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name      String    @unique
+  factories Factory[]
+
+  @@map("property_types")
+}
+
+model ConfectionaryType {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name     String    @unique
+  products Product[]
+
+  @@map("confectionary_types")
+}
+
+model Package {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name           String           @unique
+  CatalogueEntry CatalogueEntry[]
+
+  @@map("packages")
+}
+
+model Unit {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name             String           @unique
+  catalogueEntries CatalogueEntry[]
+
+  @@map("units")
+}
+
+model District {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name   String @unique
+  cityId String @map("city_id")
+
+  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  shops Shop[]
+
+  @@map("disctricts")
+}
+
+model Factory {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name           String  @unique
+  handle         String  @unique
+  cityId         String
+  phoneNumber    String  @map("phone_number")
+  year           Int
+  propertyTypeId String  @map("property_type_id")
+  imageId        String? @map("image_id")
+
+  city         City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  propertyType PropertyType @relation(fields: [propertyTypeId], references: [id], onDelete: Cascade)
+  image        Image?       @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  products Product[]
+
+  @@map("factories")
+}
+
+model Product {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name                String
+  confectionaryTypeId String  @map("confectionary_type_id")
+  factoryId           String  @map("factory_id")
+  factory             Factory @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+
+  confectionaryType ConfectionaryType @relation(fields: [confectionaryTypeId], references: [id], onDelete: Cascade)
+
+  catalogueEntries CatalogueEntry[]
+
+  @@map("products")
+}
+
+model CatalogueEntry {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  productId String  @map("product_id")
+  packageId String  @map("package_id")
+  unitId    String? @map("unit_id")
+  imageId   String? @map("image_id")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  unit    Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  image   Image?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  shipments ShipmentEntry[]
+
+  @@map("catalogue")
+}
+
+model Shop {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  name           String
+  handle         String   @unique
+  districtId     String   @map("district_id")
+  district       District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  openSince      Int      @map("open_since")
+  phoneNumber    String   @map("phone_number")
+  employeesCount Int      @map("employees_count")
+  imageId        String?  @map("image_id")
+
+  image Image? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  shipments Shipment[]
+
+  @@map("shops")
+}
+
+model Shipment {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  shopId        String          @map("shop_id")
+  shop          Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  ShipmentEntry ShipmentEntry[]
+
+  @@map("shipments")
+}
+
+model ShipmentEntry {
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  shipmentId  String @map("shipment_id")
+  catalogueId String @map("catalogue_id")
+
+  shipment Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  entry    CatalogueEntry @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+
+  @@id([shipmentId, catalogueId])
+  @@map("shipment_entries")
+}
+
+model Image {
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  id   String @id
+  link String @unique
+
+  factories        Factory[]
+  catalogueEntries CatalogueEntry[]
+  shops            Shop[]
+
+  @@map("images")
+}
