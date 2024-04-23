@@ -202,7 +202,7 @@ model Role {
   id        String    @id
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-  name      String
+  name      String    @unique
   authority Int
   users     User[]
 
