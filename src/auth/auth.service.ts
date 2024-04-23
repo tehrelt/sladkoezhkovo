@@ -6,7 +6,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { UserClaimsDto } from './dto/user-claims.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -14,6 +13,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { hash, compare } from 'bcryptjs';
 import { isEmail } from 'class-validator';
+import { User } from '@prisma/client';
 
 const SALT = Number(process.env.BCRYPT_SALT);
 
@@ -47,7 +47,7 @@ export class AuthService {
       password: hashPassword,
     });
 
-    return await this.generateTokens({ id: user.id });
+    return await this.generateTokens(user);
   }
 
   async signIn(dto: SignInDto) {
@@ -69,7 +69,7 @@ export class AuthService {
       throw new BadRequestException('invalid login or password');
     }
 
-    return this.generateTokens({ id: user.id });
+    return this.generateTokens(user);
   }
 
   async logout(id: string) {
@@ -81,11 +81,11 @@ export class AuthService {
     this.logger.verbose("refresh user's tokens", { token });
 
     try {
-      const claims = await this.jwtService.verifyAsync(token, {
+      const user = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
-      return this.generateTokens({ id: claims.id });
+      return this.generateTokens(user);
     } catch (e) {
       throw new ForbiddenException('bad refresh token');
     }
@@ -102,7 +102,7 @@ export class AuthService {
     return user;
   }
 
-  async generateTokens(dto: UserClaimsDto) {
+  async generateTokens(dto: User) {
     this.logger.verbose('generating tokens');
     const accessToken = await this.jwtService.signAsync(dto, {
       secret: process.env.JWT_ACCESS_SECRET,

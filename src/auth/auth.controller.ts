@@ -7,7 +7,8 @@ import {
   Post,
   Req,
   Res,
-  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -23,7 +24,7 @@ import { CookieOptions, Request, Response } from 'express';
 import { addHours } from 'src/helpers/date';
 import { AuthService } from './auth.service';
 import { ErrorDto } from 'src/dto/error.dto';
-import { AuthGuard } from './auth.guard';
+import { AuthRequired } from './decorators/auth.decorator';
 
 const REFRESH_TOKEN = 'refreshToken';
 const COOKIE_OPTIONS: CookieOptions = {
@@ -40,6 +41,7 @@ export class AuthController {
 
   @Post('sign-up')
   @ApiOperation({ summary: 'Регистрация нового пользователя' })
+  @UsePipes(ValidationPipe)
   async signUp(
     @Body() dto: SignUpDto,
     @Res({ passthrough: true }) res: Response,
@@ -55,6 +57,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Авторизация пользователя' })
   @ApiResponse({ status: 200 })
   @ApiBadRequestResponse({ type: ErrorDto })
+  @UsePipes(ValidationPipe)
   async signIn(
     @Body() dto: SignInDto,
     @Res({ passthrough: true }) res: Response,
@@ -67,7 +70,7 @@ export class AuthController {
 
   @Get('logout')
   @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  @AuthRequired()
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     await this.service.logout(req['user'].id);
     this.logger.verbose('clearing cookie');
@@ -77,7 +80,7 @@ export class AuthController {
   @Get('refresh')
   @ApiBearerAuth()
   @ApiCookieAuth()
-  @UseGuards(AuthGuard)
+  @AuthRequired()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -100,12 +103,10 @@ export class AuthController {
   @Get('profile')
   @ApiOperation({ summary: 'Получение профиля авторизованного пользователя' })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard)
+  @AuthRequired()
   async profile(@Req() req: Request) {
     const { id } = req['user'];
-
     this.logger.verbose('getting profile', { id });
-
     return await this.service.profile(id);
   }
 }
