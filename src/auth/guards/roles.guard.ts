@@ -31,15 +31,15 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    this.logger.verbose('checking role permissions', { requiredRoles });
-
     const request: Request = context.switchToHttp().getRequest();
     const user = request['user'] as User;
 
-    this.logger.verbose('extracting user role id', { roleId: user.roleId });
-
     const userRole = await this.rolesService.findOne(user.roleId);
 
+    this.logger.verbose('checking role permissions', {
+      requiredRoles,
+      userRole: userRole.name,
+    });
     return requiredRoles.includes(userRole.name);
   }
 }

@@ -16,11 +16,11 @@ export class LoggerMiddleware implements NestMiddleware {
 
       if (statusCode >= 400 && statusCode < 500) {
         this.logger.warn(
-          `${method} | ${delta}ms | ${ip} | ${statusCode}| ${originalUrl} | ${statusMessage}`,
+          `${method} | ${delta}ms | ${ip} | ${statusCode} | ${originalUrl} | ${statusMessage}`,
         );
       } else {
         this.logger.log(
-          `${method} | ${delta}ms\t| ${ip} | ${statusCode}| ${originalUrl}`,
+          `${method} | ${delta}ms | ${ip} | ${statusCode} | ${originalUrl}`,
         );
       }
     });
