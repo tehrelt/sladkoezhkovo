@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
@@ -71,9 +72,24 @@ export class AuthService {
     return this.generateTokens({ id: user.id });
   }
 
-  async logout() {}
+  async logout(id: string) {
+    this.logger.verbose('logout user', { id });
+    this.redisService.clear(id);
+  }
 
-  async refresh() {}
+  async refresh(token: string) {
+    this.logger.verbose("refresh user's tokens", { token });
+
+    try {
+      const claims = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+      return this.generateTokens({ id: claims.id });
+    } catch (e) {
+      throw new ForbiddenException('bad refresh token');
+    }
+  }
 
   async profile() {}
 

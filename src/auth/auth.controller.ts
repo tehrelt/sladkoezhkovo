@@ -1,17 +1,29 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
-import { CookieOptions, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { addHours } from 'src/helpers/date';
 import { AuthService } from './auth.service';
 import { ErrorDto } from 'src/dto/error.dto';
+import { AuthGuard } from './auth.guard';
 
 const REFRESH_TOKEN = 'refreshToken';
 const COOKIE_OPTIONS: CookieOptions = {
@@ -22,6 +34,8 @@ const COOKIE_OPTIONS: CookieOptions = {
 @Controller('auth')
 @ApiTags('Авторизация')
 export class AuthController {
+  private readonly logger = new Logger('AuthController');
+
   constructor(private readonly service: AuthService) {}
 
   @Post('sign-up')
@@ -31,6 +45,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken } = await this.service.signUp(dto);
+
+    this.logger.verbose('saving cookie', { refreshToken });
     res.cookie(REFRESH_TOKEN, refreshToken, COOKIE_OPTIONS);
     return { accessToken };
   }
@@ -44,17 +60,42 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken } = await this.service.signIn(dto);
+    this.logger.verbose('saving cookie', { refreshToken });
     res.cookie(REFRESH_TOKEN, refreshToken, COOKIE_OPTIONS);
     return { accessToken };
   }
 
   @Get('logout')
   @ApiBearerAuth()
-  async logout() {}
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await this.service.logout(req['user'].id);
+    this.logger.verbose('clearing cookie');
+    res.clearCookie(REFRESH_TOKEN);
+  }
 
   @Get('refresh')
   @ApiBearerAuth()
-  async refresh() {}
+  @ApiCookieAuth()
+  @UseGuards(AuthGuard)
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    this.logger.verbose('refreshing token', { cookies: req.cookies });
+    const token = req.cookies[REFRESH_TOKEN];
+    if (!token) {
+      this.logger.verbose('refresh token is missing');
+      throw new BadRequestException('refresh token is missing');
+    }
+
+    const { accessToken, refreshToken } = await this.service.refresh(token);
+
+    this.logger.verbose('saving new token cookie');
+    res.cookie(REFRESH_TOKEN, refreshToken, COOKIE_OPTIONS);
+
+    return { accessToken };
+  }
 
   @Get('profile')
   @ApiOperation({ summary: 'Получение профиля авторизованного пользователя' })
