@@ -20,7 +20,7 @@ export class LoggingMiddleware implements NestMiddleware {
         );
       } else {
         this.logger.log(
-          `${delta}ms\t| ${ip} | ${method}\t| ${statusCode}| ${originalUrl}`,
+          `${method} | ${delta}ms\t| ${ip} | ${statusCode}| ${originalUrl}`,
         );
       }
     });
