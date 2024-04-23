@@ -5,6 +5,7 @@ import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { LoggingMiddleware } from './logging/logging.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { LoggingMiddleware } from './logging/logging.middleware';
     RedisModule,
     UsersModule,
     RolesModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

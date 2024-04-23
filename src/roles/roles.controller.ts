@@ -10,8 +10,16 @@ import {
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiConflictResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Role } from './entities/role.entity';
+import { ErrorDto } from 'src/dto/error.dto';
 
 @Controller('roles')
 @ApiTags('Роли')
@@ -20,7 +28,8 @@ export class RolesController {
 
   @Post()
   @ApiOperation({ summary: 'Создание новой роли' })
-  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 201, type: Role })
+  @ApiConflictResponse({ type: ErrorDto })
   async create(@Body() createRoleDto: CreateRoleDto) {
     try {
       return await this.rolesService.create(createRoleDto);
@@ -35,12 +44,15 @@ export class RolesController {
 
   @Get()
   @ApiOperation({ summary: 'Получение всех ролей' })
+  @ApiResponse({ status: 200, type: [Role] })
   findAll() {
     return this.rolesService.findAll();
   }
 
   @Get(':slug')
   @ApiOperation({ summary: 'Получение роли по id или названию' })
+  @ApiResponse({ status: 200, type: Role })
+  @ApiNotFoundResponse({ type: ErrorDto })
   async findOne(@Param('slug') slug: string) {
     const role = await this.rolesService.findOne(slug);
     if (!role) {
@@ -52,6 +64,8 @@ export class RolesController {
 
   @Delete(':slug')
   @ApiOperation({ summary: 'Удаление роли по id или названию' })
+  @ApiResponse({ status: 200, type: Role })
+  @ApiNotFoundResponse({ type: ErrorDto })
   async remove(@Param('slug') slug: string) {
     try {
       const role = await this.rolesService.remove(slug);
