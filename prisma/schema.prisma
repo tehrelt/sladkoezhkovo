@@ -8,10 +8,9 @@ datasource db {
 }
 
 model City {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id        String     @id
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime?  @map("updated_at")
   name      String     @unique
   districts District[]
   factories Factory[]
@@ -23,7 +22,6 @@ model PropertyType {
   id        String    @id
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-
   name      String    @unique
   factories Factory[]
 
@@ -34,18 +32,16 @@ model ConfectionaryType {
   id        String    @id
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-
-  name     String    @unique
-  products Product[]
+  name      String    @unique
+  products  Product[]
 
   @@map("confectionary_types")
 }
 
 model Package {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id             String           @id
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime?        @map("updated_at")
   name           String           @unique
   CatalogueEntry CatalogueEntry[]
 
@@ -53,10 +49,9 @@ model Package {
 }
 
 model Unit {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id               String           @id
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
   name             String           @unique
   catalogueEntries CatalogueEntry[]
 
@@ -67,133 +62,149 @@ model District {
   id        String    @id
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-
-  name   String @unique
-  cityId String @map("city_id")
-
-  city City @relation(fields: [cityId], references: [id], onDelete: Cascade)
-
-  shops Shop[]
+  name      String    @unique
+  cityId    String    @map("city_id")
+  city      City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  shops     Shop[]
 
   @@map("disctricts")
 }
 
 model Factory {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
-  name           String  @unique
-  handle         String  @unique
+  id             String       @id
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime?    @map("updated_at")
+  name           String       @unique
+  handle         String       @unique
   cityId         String
-  phoneNumber    String  @map("phone_number")
+  phoneNumber    String       @map("phone_number")
   year           Int
-  propertyTypeId String  @map("property_type_id")
-  imageId        String? @map("image_id")
-
-  city         City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
-  propertyType PropertyType @relation(fields: [propertyTypeId], references: [id], onDelete: Cascade)
-  image        Image?       @relation(fields: [imageId], references: [id], onDelete: SetNull)
-
-  products Product[]
+  propertyTypeId String       @map("property_type_id")
+  imageId        String?      @map("image_id")
+  ownerId        String       @map("owner_id")
+  city           City         @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  image          Image?       @relation(fields: [imageId], references: [id])
+  user           User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyType   PropertyType @relation(fields: [propertyTypeId], references: [id], onDelete: Cascade)
+  products       Product[]
 
   @@map("factories")
 }
 
 model Product {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id                  String            @id
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime?         @map("updated_at")
   name                String
-  confectionaryTypeId String  @map("confectionary_type_id")
-  factoryId           String  @map("factory_id")
-  factory             Factory @relation(fields: [factoryId], references: [id], onDelete: Cascade)
-
-  confectionaryType ConfectionaryType @relation(fields: [confectionaryTypeId], references: [id], onDelete: Cascade)
-
-  catalogueEntries CatalogueEntry[]
+  confectionaryTypeId String            @map("confectionary_type_id")
+  factoryId           String            @map("factory_id")
+  catalogueEntries    CatalogueEntry[]
+  confectionaryType   ConfectionaryType @relation(fields: [confectionaryTypeId], references: [id], onDelete: Cascade)
+  factory             Factory           @relation(fields: [factoryId], references: [id], onDelete: Cascade)
 
   @@map("products")
 }
 
 model CatalogueEntry {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
-  productId String  @map("product_id")
-  packageId String  @map("package_id")
-  unitId    String? @map("unit_id")
-  imageId   String? @map("image_id")
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  unit    Unit?   @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  image   Image?  @relation(fields: [imageId], references: [id], onDelete: SetNull)
-
+  id        String          @id
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime?       @map("updated_at")
+  productId String          @map("product_id")
+  packageId String          @map("package_id")
+  unitId    String?         @map("unit_id")
+  imageId   String?         @map("image_id")
+  image     Image?          @relation(fields: [imageId], references: [id])
+  package   Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  unit      Unit?           @relation(fields: [unitId], references: [id])
   shipments ShipmentEntry[]
 
   @@map("catalogue")
 }
 
 model Shop {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id             String     @id
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime?  @map("updated_at")
   name           String
-  handle         String   @unique
-  districtId     String   @map("district_id")
-  district       District @relation(fields: [districtId], references: [id], onDelete: Cascade)
-  openSince      Int      @map("open_since")
-  phoneNumber    String   @map("phone_number")
-  employeesCount Int      @map("employees_count")
-  imageId        String?  @map("image_id")
-
-  image Image? @relation(fields: [imageId], references: [id], onDelete: SetNull)
-
-  shipments Shipment[]
+  handle         String     @unique
+  districtId     String     @map("district_id")
+  openSince      Int        @map("open_since")
+  phoneNumber    String     @map("phone_number")
+  employeesCount Int        @map("employees_count")
+  imageId        String?    @map("image_id")
+  ownerId        String     @map("owner_id")
+  shipments      Shipment[]
+  district       District   @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  image          Image?     @relation(fields: [imageId], references: [id])
+  owner          User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@map("shops")
 }
 
 model Shipment {
-  id        String    @id
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
+  id            String          @id
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime?       @map("updated_at")
   shopId        String          @map("shop_id")
-  shop          Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
   ShipmentEntry ShipmentEntry[]
+  shop          Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@map("shipments")
 }
 
 model ShipmentEntry {
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
-  shipmentId  String @map("shipment_id")
-  catalogueId String @map("catalogue_id")
-
-  shipment Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
-  entry    CatalogueEntry @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime?      @map("updated_at")
+  shipmentId  String         @map("shipment_id")
+  catalogueId String         @map("catalogue_id")
+  entry       CatalogueEntry @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
+  shipment    Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@id([shipmentId, catalogueId])
   @@map("shipment_entries")
 }
 
 model Image {
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @map("updated_at")
-
-  id   String @id
-  link String @unique
-
-  factories        Factory[]
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @map("updated_at")
+  id               String           @id
+  link             String           @unique
   catalogueEntries CatalogueEntry[]
+  factories        Factory[]
   shops            Shop[]
+  User             User[]
 
   @@map("images")
+}
+
+model User {
+  id          String    @id
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+  handle      String    @unique
+  email       String    @unique
+  roleId      String
+  lastName    String    @map("last_name")
+  firstName   String    @map("first_name")
+  middleName  String    @map("middleName")
+  phoneNumber String    @unique @map("phone_number")
+  imageId     String?   @map("image_id")
+  factories   Factory[]
+  shops       Shop[]
+  image       Image?    @relation(fields: [imageId], references: [id], onUpdate: SetNull)
+  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model Role {
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  name      String
+  authority Int
+  users     User[]
+
+  @@map("roles")
 }
