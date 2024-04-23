@@ -6,13 +6,15 @@ import {
   Param,
   NotFoundException,
   ConflictException,
+  Delete,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Controller('roles')
+@ApiTags('Роли')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
@@ -32,11 +34,13 @@ export class RolesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Получение всех ролей' })
   findAll() {
     return this.rolesService.findAll();
   }
 
   @Get(':slug')
+  @ApiOperation({ summary: 'Получение роли по id или названию' })
   async findOne(@Param('slug') slug: string) {
     const role = await this.rolesService.findOne(slug);
     if (!role) {
@@ -46,13 +50,16 @@ export class RolesController {
     return role;
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateRoleDto: UpdateRoleDto) {
-  //   return this.rolesService.update(+id, updateRoleDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.rolesService.remove(+id);
-  // }
+  @Delete(':slug')
+  @ApiOperation({ summary: 'Удаление роли по id или названию' })
+  async remove(@Param('slug') slug: string) {
+    try {
+      const role = await this.rolesService.remove(slug);
+      return role;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        throw new NotFoundException('role not found');
+      }
+    }
+  }
 }

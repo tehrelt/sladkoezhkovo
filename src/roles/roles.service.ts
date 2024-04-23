@@ -30,4 +30,10 @@ export class RolesService {
 
     return role;
   }
+
+  async remove(slug: string) {
+    return isUUID(slug)
+      ? await this.prisma.role.delete({ where: { id: slug } })
+      : await this.prisma.role.delete({ where: { name: slug } });
+  }
 }
