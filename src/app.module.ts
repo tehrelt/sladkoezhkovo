@@ -1,13 +1,24 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
+import { LoggingMiddleware } from './logging/logging.middleware';
 
 @Module({
-  imports: [PrismaModule, ConfigModule.forRoot({ envFilePath: '.env' }), RedisModule, UsersModule, RolesModule],
+  imports: [
+    PrismaModule,
+    ConfigModule.forRoot({ envFilePath: '.env' }),
+    RedisModule,
+    UsersModule,
+    RolesModule,
+  ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}
