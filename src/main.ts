@@ -2,12 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { mkdirSync, writeFileSync } from 'fs';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api');
-  app.enableCors();
+  app.use(cookieParser());
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('SLADKOEZHKOVO API')
@@ -20,11 +25,11 @@ async function bootstrap() {
       in: 'Header',
       scheme: 'Bearer',
     })
-    .addCookieAuth('refreshToken', {
-      type: 'http',
-      in: 'Cookie',
-      scheme: 'Bearer',
-    })
+    // .addCookieAuth('refreshToken', {
+    //   type: 'http',
+    //   in: 'Cookie',
+    //   scheme: 'Bearer',
+    // })
     .build();
   const document = SwaggerModule.createDocument(app, config);
 

@@ -1,9 +1,15 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { RedisClientType, createClient } from 'redis';
 
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: RedisClientType;
+  private logger = new Logger('RedisService');
 
   constructor() {
     const host = process.env.REDIS_HOST;
@@ -15,17 +21,21 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async set(key: string, value: string) {
+    this.logger.verbose(`setting key`, {
+      key,
+      value,
+    });
     return this.client.set(key, value);
   }
 
   async clear(key: string) {
+    this.logger.verbose(`clear key`, { key });
     return this.client.del(key);
   }
 
   async get<T>(key: string): Promise<T> {
-    console.log(`RedisService: get by ${key}`);
     const value = await this.client.get(key);
-    console.log(`RedisService: get by ${key} -> ${value}`);
+    this.logger.verbose('get value', { key, value });
     return value as T;
   }
 

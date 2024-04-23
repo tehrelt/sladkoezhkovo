@@ -2,7 +2,7 @@ import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Injectable()
-export class LoggingMiddleware implements NestMiddleware {
+export class LoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger('HTTP');
 
   use(req: Request, res: Response, next: () => void) {
@@ -16,11 +16,11 @@ export class LoggingMiddleware implements NestMiddleware {
 
       if (statusCode >= 400 && statusCode < 500) {
         this.logger.warn(
-          `${method} | ${delta}ms | ${ip} | ${statusCode}| ${originalUrl} | ${statusMessage}`,
+          `${method} | ${delta}ms | ${ip} | ${statusCode} | ${originalUrl} | ${statusMessage}`,
         );
       } else {
         this.logger.log(
-          `${method} | ${delta}ms\t| ${ip} | ${statusCode}| ${originalUrl}`,
+          `${method} | ${delta}ms | ${ip} | ${statusCode} | ${originalUrl}`,
         );
       }
     });

@@ -179,21 +179,22 @@ model Image {
 }
 
 model User {
-  id          String    @id
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime? @map("updated_at")
-  handle      String    @unique
-  email       String    @unique
-  roleId      String    @map("role_id")
-  lastName    String    @map("last_name")
-  firstName   String    @map("first_name")
-  middleName  String    @map("middle_name")
-  phoneNumber String    @unique @map("phone_number")
-  imageId     String?   @map("image_id")
-  factories   Factory[]
-  shops       Shop[]
-  image       Image?    @relation(fields: [imageId], references: [id], onUpdate: SetNull)
-  role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id         String    @id
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @map("updated_at")
+  handle     String    @unique
+  email      String    @unique
+  roleId     String    @map("role_id")
+  lastName   String    @map("last_name")
+  firstName  String    @map("first_name")
+  middleName String    @map("middle_name")
+  password   String
+  // phoneNumber String    @unique @map("phone_number")
+  imageId    String?   @map("image_id")
+  factories  Factory[]
+  shops      Shop[]
+  image      Image?    @relation(fields: [imageId], references: [id], onUpdate: SetNull)
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@map("users")
 }
@@ -202,7 +203,7 @@ model Role {
   id        String    @id
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-  name      String
+  name      String    @unique
   authority Int
   users     User[]
 
