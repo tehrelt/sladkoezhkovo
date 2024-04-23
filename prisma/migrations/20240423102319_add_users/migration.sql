@@ -18,10 +18,10 @@ CREATE TABLE "users" (
     "updated_at" TIMESTAMP(3),
     "handle" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "roleId" TEXT NOT NULL,
+    "role_id" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
-    "middleName" TEXT NOT NULL,
+    "middle_name" TEXT NOT NULL,
     "phone_number" TEXT NOT NULL,
     "image_id" TEXT,
 
@@ -29,14 +29,14 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "Role" (
+CREATE TABLE "roles" (
     "id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
     "name" TEXT NOT NULL,
     "authority" INTEGER NOT NULL,
 
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -58,4 +58,4 @@ ALTER TABLE "shops" ADD CONSTRAINT "shops_owner_id_fkey" FOREIGN KEY ("owner_id"
 ALTER TABLE "users" ADD CONSTRAINT "users_image_id_fkey" FOREIGN KEY ("image_id") REFERENCES "images"("id") ON DELETE SET NULL ON UPDATE SET NULL;
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE CASCADE ON UPDATE CASCADE;

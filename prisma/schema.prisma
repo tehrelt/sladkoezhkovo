@@ -184,10 +184,10 @@ model User {
   updatedAt   DateTime? @map("updated_at")
   handle      String    @unique
   email       String    @unique
-  roleId      String
+  roleId      String    @map("role_id")
   lastName    String    @map("last_name")
   firstName   String    @map("first_name")
-  middleName  String    @map("middleName")
+  middleName  String    @map("middle_name")
   phoneNumber String    @unique @map("phone_number")
   imageId     String?   @map("image_id")
   factories   Factory[]
