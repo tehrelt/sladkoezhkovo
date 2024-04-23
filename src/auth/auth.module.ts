@@ -5,10 +5,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { LoggerModule } from 'src/logger/logger.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
-  imports: [JwtModule, UsersModule, RedisModule, LoggerModule],
+  imports: [JwtModule, UsersModule, RedisModule, LoggerModule, RolesModule],
 })
 export class AuthModule {}

@@ -25,11 +25,11 @@ async function bootstrap() {
       in: 'Header',
       scheme: 'Bearer',
     })
-    .addCookieAuth('refreshToken', {
-      type: 'http',
-      in: 'Cookie',
-      scheme: 'Bearer',
-    })
+    // .addCookieAuth('refreshToken', {
+    //   type: 'http',
+    //   in: 'Cookie',
+    //   scheme: 'Bearer',
+    // })
     .build();
   const document = SwaggerModule.createDocument(app, config);
 

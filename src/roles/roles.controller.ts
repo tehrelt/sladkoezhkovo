@@ -20,6 +20,7 @@ import {
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { Role } from './entities/role.entity';
 import { ErrorDto } from 'src/dto/error.dto';
+import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('roles')
 @ApiTags('Роли')
@@ -30,6 +31,7 @@ export class RolesController {
   @ApiOperation({ summary: 'Создание новой роли' })
   @ApiResponse({ status: 201, type: Role })
   @ApiConflictResponse({ type: ErrorDto })
+  @RequiredAuth('admin')
   async create(@Body() createRoleDto: CreateRoleDto) {
     try {
       return await this.rolesService.create(createRoleDto);
@@ -45,6 +47,7 @@ export class RolesController {
   @Get()
   @ApiOperation({ summary: 'Получение всех ролей' })
   @ApiResponse({ status: 200, type: [Role] })
+  @RequiredAuth('admin')
   findAll() {
     return this.rolesService.findAll();
   }
@@ -53,6 +56,7 @@ export class RolesController {
   @ApiOperation({ summary: 'Получение роли по id или названию' })
   @ApiResponse({ status: 200, type: Role })
   @ApiNotFoundResponse({ type: ErrorDto })
+  @RequiredAuth('admin')
   async findOne(@Param('slug') slug: string) {
     const role = await this.rolesService.findOne(slug);
     if (!role) {
@@ -66,6 +70,7 @@ export class RolesController {
   @ApiOperation({ summary: 'Удаление роли по id или названию' })
   @ApiResponse({ status: 200, type: Role })
   @ApiNotFoundResponse({ type: ErrorDto })
+  @RequiredAuth('admin')
   async remove(@Param('slug') slug: string) {
     try {
       const role = await this.rolesService.remove(slug);

@@ -13,7 +13,6 @@ import {
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiCookieAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -24,7 +23,7 @@ import { CookieOptions, Request, Response } from 'express';
 import { addHours } from 'src/helpers/date';
 import { AuthService } from './auth.service';
 import { ErrorDto } from 'src/dto/error.dto';
-import { AuthRequired } from './decorators/auth.decorator';
+import { RequiredAuth } from './decorators/auth.decorator';
 
 const REFRESH_TOKEN = 'refreshToken';
 const COOKIE_OPTIONS: CookieOptions = {
@@ -69,8 +68,7 @@ export class AuthController {
   }
 
   @Get('logout')
-  @ApiBearerAuth()
-  @AuthRequired()
+  @RequiredAuth()
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     await this.service.logout(req['user'].id);
     this.logger.verbose('clearing cookie');
@@ -79,8 +77,7 @@ export class AuthController {
 
   @Get('refresh')
   @ApiBearerAuth()
-  @ApiCookieAuth()
-  @AuthRequired()
+  @RequiredAuth()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -102,8 +99,7 @@ export class AuthController {
 
   @Get('profile')
   @ApiOperation({ summary: 'Получение профиля авторизованного пользователя' })
-  @ApiBearerAuth()
-  @AuthRequired()
+  @RequiredAuth()
   async profile(@Req() req: Request) {
     const { id } = req['user'];
     this.logger.verbose('getting profile', { id });
