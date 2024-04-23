@@ -91,7 +91,16 @@ export class AuthService {
     }
   }
 
-  async profile() {}
+  async profile(id: string) {
+    const user = await this.usersService.findById(id);
+
+    if (!user) {
+      this.logger.error('user not found', { id });
+      throw new BadRequestException('invalid user id');
+    }
+
+    return user;
+  }
 
   async generateTokens(dto: UserClaimsDto) {
     this.logger.verbose('generating tokens');
