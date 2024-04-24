@@ -21,6 +21,19 @@ services:
     volumes:
       - redisdata:/data
 
+  minio:
+    image: minio/minio:RELEASE.2024-03-30T09-41-56Z.fips
+    container_name: minio
+    volumes:
+      - miniodata:/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    env_file:
+      - .env
+    command: server /data --console-address ":9001"
+
 volumes:
   pgdata:
   redisdata:
+  miniodata:

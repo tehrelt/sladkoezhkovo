@@ -94,13 +94,4 @@ export class AuthController {
 
     return { accessToken };
   }
-
-  @Get('profile')
-  @ApiOperation({ summary: 'Получение профиля авторизованного пользователя' })
-  @RequiredAuth()
-  async profile(@Req() req: Request) {
-    const { id } = req['user'];
-    this.logger.verbose('getting profile', { id });
-    return await this.service.profile(id);
-  }
 }

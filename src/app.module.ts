@@ -7,6 +7,8 @@ import { RolesModule } from './roles/roles.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from './logger/logger.module';
+import { AccountModule } from './account/account.module';
+import { MinioModule } from './minio/minio.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { LoggerModule } from './logger/logger.module';
     RolesModule,
     AuthModule,
     LoggerModule,
+    AccountModule,
+    MinioModule,
   ],
   controllers: [],
   providers: [],

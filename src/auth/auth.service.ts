@@ -45,6 +45,7 @@ export class AuthService {
     await this.usersService.create({
       ...dto,
       password: hashPassword,
+      role: 'regular',
     });
 
     const user = await this.usersService.findByHandle(dto.handle);
@@ -91,29 +92,15 @@ export class AuthService {
     this.logger.verbose("refresh user's tokens", { token });
 
     try {
-      const user = await this.jwtService.verifyAsync(token, {
+      const user: UserClaims = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
-      return this.generateTokens({
-        id: user.id,
-        handle: user.handle,
-        role: user.role.name,
-      });
+      return this.generateTokens(user);
     } catch (e) {
+      this.logger.error('bad refresh token', e);
       throw new ForbiddenException('bad refresh token');
     }
-  }
-
-  async profile(id: string) {
-    const user = await this.usersService.findById(id);
-
-    if (!user) {
-      this.logger.error('user not found', { id });
-      throw new BadRequestException('invalid user id');
-    }
-
-    return user;
   }
 
   async generateTokens(dto: UserClaims) {
@@ -126,7 +113,7 @@ export class AuthService {
       },
       {
         secret: process.env.JWT_ACCESS_SECRET,
-        expiresIn: `${process.env.JWT_ACCESS_TTL}h`,
+        expiresIn: `${process.env.JWT_ACCESS_TTL}m`,
       },
     );
 

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isUUID } from 'class-validator';
@@ -6,6 +10,8 @@ import { uuidv7 } from 'uuidv7';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger('UsersService');
+
   constructor(private readonly prisma: PrismaService) {}
 
   create(dto: CreateUserDto) {
@@ -14,14 +20,19 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         id: id,
-        ...dto,
-        roleId: '018f0ae2-9777-7409-8057-c61a5edae14b',
+        email: dto.email,
+        lastName: dto.lastName,
+        firstName: dto.firstName,
+        middleName: dto.middleName,
+        handle: dto.handle,
+        password: dto.password,
+        role: { connect: { name: dto.role } },
       },
     });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    return await this.prisma.user.findMany({ include: { role: true } });
   }
 
   async findOne(slug: string) {
@@ -50,5 +61,18 @@ export class UsersService {
       where: { handle },
       include: { role: true },
     });
+  }
+
+  async promote(slug: string, roleName: string) {
+    this.logger.verbose('promoting user', { slug, role: roleName });
+    try {
+      return await this.prisma.user.update({
+        data: { role: { connect: { name: roleName } } },
+        where: { handle: slug },
+      });
+    } catch (error) {
+      this.logger.error('cannot promote user', { slug, roleName, error });
+      throw new InternalServerErrorException();
+    }
   }
 }
