@@ -5,18 +5,14 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RolesService } from 'src/roles/roles.service';
 import { ROLES_METADATA } from '../decorators/auth.decorator';
-import { User } from '@prisma/client';
+import { UserClaims } from '../dto/user-claims.dto';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
   private readonly logger = new Logger('RoleGuard');
 
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly rolesService: RolesService,
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
@@ -24,22 +20,18 @@ export class RoleGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    console.log(requiredRoles);
-
     if (!requiredRoles) {
       this.logger.verbose('roles dont specified');
       return true;
     }
 
     const request: Request = context.switchToHttp().getRequest();
-    const user = request['user'] as User;
-
-    const userRole = await this.rolesService.findOne(user.roleId);
+    const user = request['user'] as UserClaims;
 
     this.logger.verbose('checking role permissions', {
       requiredRoles,
-      userRole: userRole.name,
+      userRole: user.role,
     });
-    return requiredRoles.includes(userRole.name);
+    return requiredRoles.includes(user.role);
   }
 }

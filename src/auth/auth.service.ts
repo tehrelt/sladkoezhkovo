@@ -13,7 +13,7 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { hash, compare } from 'bcryptjs';
 import { isEmail } from 'class-validator';
-import { User } from '@prisma/client';
+import { UserClaims } from './dto/user-claims.dto';
 
 const SALT = Number(process.env.BCRYPT_SALT);
 
@@ -42,12 +42,18 @@ export class AuthService {
 
     const hashPassword = await hash(dto.password, SALT);
 
-    const user = await this.usersService.create({
+    await this.usersService.create({
       ...dto,
       password: hashPassword,
     });
 
-    return await this.generateTokens(user);
+    const user = await this.usersService.findByHandle(dto.handle);
+
+    return await this.generateTokens({
+      id: user.id,
+      handle: user.handle,
+      role: user.role.name,
+    });
   }
 
   async signIn(dto: SignInDto) {
@@ -69,7 +75,11 @@ export class AuthService {
       throw new BadRequestException('invalid login or password');
     }
 
-    return this.generateTokens(user);
+    return await this.generateTokens({
+      id: user.id,
+      handle: user.handle,
+      role: user.role.name,
+    });
   }
 
   async logout(id: string) {
@@ -85,7 +95,11 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_SECRET,
       });
 
-      return this.generateTokens(user);
+      return this.generateTokens({
+        id: user.id,
+        handle: user.handle,
+        role: user.role.name,
+      });
     } catch (e) {
       throw new ForbiddenException('bad refresh token');
     }
@@ -102,21 +116,13 @@ export class AuthService {
     return user;
   }
 
-  async generateTokens(dto: User) {
+  async generateTokens(dto: UserClaims) {
     this.logger.verbose('generating tokens');
     const accessToken = await this.jwtService.signAsync(
       {
         id: dto.id,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
         handle: dto.handle,
-        email: dto.email,
-        roleId: dto.roleId,
-        lastName: dto.lastName,
-        firstName: dto.firstName,
-        middleName: dto.middleName,
-        password: dto.password,
-        imageId: dto.imageId,
+        role: dto.role,
       },
       {
         secret: process.env.JWT_ACCESS_SECRET,
@@ -127,16 +133,8 @@ export class AuthService {
     const refreshToken = await this.jwtService.signAsync(
       {
         id: dto.id,
-        createdAt: dto.createdAt,
-        updatedAt: dto.updatedAt,
         handle: dto.handle,
-        email: dto.email,
-        roleId: dto.roleId,
-        lastName: dto.lastName,
-        firstName: dto.firstName,
-        middleName: dto.middleName,
-        password: dto.password,
-        imageId: dto.imageId,
+        role: dto.role,
       },
       {
         secret: process.env.JWT_REFRESH_SECRET,

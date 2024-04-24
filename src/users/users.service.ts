@@ -32,14 +32,23 @@ export class UsersService {
   }
 
   async findById(id: string) {
-    return await this.prisma.user.findUnique({ where: { id } });
+    return await this.prisma.user.findUnique({
+      where: { id },
+      include: { role: true },
+    });
   }
 
   async findByEmail(email: string) {
-    return await this.prisma.user.findUnique({ where: { email } });
+    return await this.prisma.user.findUnique({
+      where: { email },
+      include: { role: true },
+    });
   }
 
   async findByHandle(handle: string) {
-    return await this.prisma.user.findUnique({ where: { handle } });
+    return await this.prisma.user.findUnique({
+      where: { handle },
+      include: { role: true },
+    });
   }
 }
