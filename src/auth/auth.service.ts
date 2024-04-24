@@ -104,15 +104,45 @@ export class AuthService {
 
   async generateTokens(dto: User) {
     this.logger.verbose('generating tokens');
-    const accessToken = await this.jwtService.signAsync(dto, {
-      secret: process.env.JWT_ACCESS_SECRET,
-      expiresIn: `${process.env.JWT_ACCESS_TTL}h`,
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        id: dto.id,
+        createdAt: dto.createdAt,
+        updatedAt: dto.updatedAt,
+        handle: dto.handle,
+        email: dto.email,
+        roleId: dto.roleId,
+        lastName: dto.lastName,
+        firstName: dto.firstName,
+        middleName: dto.middleName,
+        password: dto.password,
+        imageId: dto.imageId,
+      },
+      {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: `${process.env.JWT_ACCESS_TTL}h`,
+      },
+    );
 
-    const refreshToken = await this.jwtService.signAsync(dto, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: `${process.env.JWT_REFRESH_TTL}h`,
-    });
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        id: dto.id,
+        createdAt: dto.createdAt,
+        updatedAt: dto.updatedAt,
+        handle: dto.handle,
+        email: dto.email,
+        roleId: dto.roleId,
+        lastName: dto.lastName,
+        firstName: dto.firstName,
+        middleName: dto.middleName,
+        password: dto.password,
+        imageId: dto.imageId,
+      },
+      {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: `${process.env.JWT_REFRESH_TTL}h`,
+      },
+    );
 
     this.logger.verbose('tokens generated', { accessToken, refreshToken });
 
