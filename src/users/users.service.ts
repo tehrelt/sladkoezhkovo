@@ -14,13 +14,8 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         id: id,
-        email: dto.email,
-        firstName: dto.firstName,
-        middleName: dto.firstName,
-        lastName: dto.lastName,
-        handle: dto.handle,
+        ...dto,
         roleId: '018f0ae2-9777-7409-8057-c61a5edae14b',
-        password: dto.password,
       },
     });
   }
