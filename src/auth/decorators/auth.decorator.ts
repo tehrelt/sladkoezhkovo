@@ -5,7 +5,9 @@ import { AuthGuard } from '../guards/auth.guard';
 
 export const ROLES_METADATA = 'roles-metadata';
 
-export const RequiredAuth = (...roles: string[]) =>
+export const RequiredAuth = (
+  ...roles: ('admin' | 'moderator' | 'shop_owner' | 'factory_owner')[]
+) =>
   applyDecorators(
     ApiBearerAuth(),
     roles.length > 0

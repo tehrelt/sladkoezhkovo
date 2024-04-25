@@ -16,6 +16,12 @@ export class AccountService {
       throw new BadRequestException('invalid user id');
     }
 
+    this.logger.log('user found', user);
+
+    const link = user.image
+      ? await this.usersService.getAvatarLink(user.image.name)
+      : null;
+
     return {
       id: user.id,
       handle: user.handle,
@@ -23,8 +29,15 @@ export class AccountService {
       lastName: user.lastName,
       middleName: user.middleName,
       email: user.email,
-      avatarId: user.imageId,
+      avatarLink: link,
       role: user.role.name,
     };
+  }
+
+  updateAvatar(
+    id: string,
+    file: Express.Multer.File,
+  ): string | PromiseLike<string> {
+    return this.usersService.updateAvatar(id, file);
   }
 }

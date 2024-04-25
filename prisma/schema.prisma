@@ -169,7 +169,7 @@ model Image {
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime?        @map("updated_at")
   id               String           @id
-  link             String           @unique
+  name             String           @unique
   catalogueEntries CatalogueEntry[]
   factories        Factory[]
   shops            Shop[]

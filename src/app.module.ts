@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { LoggerModule } from './logger/logger.module';
 import { AccountModule } from './account/account.module';
 import { MinioModule } from './minio/minio.module';
+import { CitiesModule } from './cities/cities.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { MinioModule } from './minio/minio.module';
     LoggerModule,
     AccountModule,
     MinioModule,
+    CitiesModule,
   ],
   controllers: [],
   providers: [],

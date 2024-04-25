@@ -14,7 +14,7 @@ export class ProfileDto {
   @ApiProperty()
   middleName: string;
   @ApiProperty()
-  avatarId: string | null;
+  avatarLink: string | null;
   @ApiProperty()
   role: string;
 }
