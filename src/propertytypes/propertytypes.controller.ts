@@ -25,13 +25,13 @@ export class PropertyTypesController {
   }
 
   @Get()
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findAll() {
     return this.propertytypesService.findAll();
   }
 
   @Get(':id')
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findOne(@Param('id') id: string) {
     return this.propertytypesService.findOne(id);
   }

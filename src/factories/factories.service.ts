@@ -14,7 +14,18 @@ export class FactoriesService {
   async create(dto: CreateFactoryDto) {
     const id = uuidv7();
     this.logger.verbose(`Creating a new factory`, { id, dto });
-    return await this.prisma.factory.create({ data: { id, ...dto } });
+    return await this.prisma.factory.create({
+      data: {
+        id,
+        handle: dto.handle,
+        name: dto.name,
+        phoneNumber: dto.phoneNumber,
+        propertyTypeId: dto.propertyTypeId,
+        cityId: dto.cityId,
+        year: dto.year,
+        ownerId: dto.ownerId,
+      },
+    });
   }
 
   async findAll(filters?: Prisma.FactoryWhereInput): Promise<ListDto<Factory>> {

@@ -18,13 +18,13 @@ export class CitiesController {
   }
 
   @Get()
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   async findAll(): Promise<ListDto<City>> {
     return this.citiesService.findAll();
   }
 
   @Get(':id')
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findOne(@Param('id') id: string) {
     return this.citiesService.findOne(id);
   }
