@@ -1,12 +1,19 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ProfileDto } from 'src/auth/dto/profile.dto';
+import { ListDto } from 'src/dto/list.dto';
+import { Factory } from 'src/factories/entities/factory.entity';
+import { FactoriesService } from 'src/factories/factories.service';
 import { UsersService } from 'src/users/users.service';
+import { CreateFactoryDto } from './dto/create-factory.dto';
 
 @Injectable()
 export class AccountService {
   private readonly logger = new Logger('AccountService');
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly factoryService: FactoriesService,
+  ) {}
 
   async profile(id: string): Promise<ProfileDto> {
     const user = await this.usersService.findById(id);
@@ -29,8 +36,8 @@ export class AccountService {
       lastName: user.lastName,
       middleName: user.middleName,
       email: user.email,
-      avatarLink: link,
-      role: user.role.name,
+      imageLink: link,
+      role: user.role,
     };
   }
 
@@ -39,5 +46,13 @@ export class AccountService {
     file: Express.Multer.File,
   ): string | PromiseLike<string> {
     return this.usersService.updateAvatar(id, file);
+  }
+
+  async createFactory(id: string, dto: CreateFactoryDto) {
+    return await this.factoryService.create({ ...dto, ownerId: id });
+  }
+
+  async getFactories(id: string): Promise<ListDto<Factory>> {
+    return await this.factoryService.findAll({ ownerId: id });
   }
 }

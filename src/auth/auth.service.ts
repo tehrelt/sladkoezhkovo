@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
@@ -18,7 +19,7 @@ import { UserClaims } from './dto/user-claims.dto';
 const SALT = Number(process.env.BCRYPT_SALT);
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   private readonly logger = new Logger('AuthService');
 
   constructor(
@@ -26,6 +27,22 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
   ) {}
+
+  async onModuleInit() {
+    const uu = await this.usersService.findAll({ role: 'ADMIN' });
+
+    if (uu.count == 0) {
+      this.signUp({
+        email: 'root@sladkoezhkovo.ru',
+        handle: 'root',
+        password: 'rootroot',
+        lastName: 'root',
+        firstName: 'root',
+        middleName: 'root',
+        role: 'ADMIN',
+      });
+    }
+  }
 
   async signUp(dto: SignUpDto) {
     if (!!(await this.usersService.findByEmail(dto.email))) {
@@ -45,7 +62,6 @@ export class AuthService {
     await this.usersService.create({
       ...dto,
       password: hashPassword,
-      role: 'regular',
     });
 
     const user = await this.usersService.findByHandle(dto.handle);
@@ -53,7 +69,7 @@ export class AuthService {
     return await this.generateTokens({
       id: user.id,
       handle: user.handle,
-      role: user.role.name,
+      role: user.role,
     });
   }
 
@@ -79,7 +95,7 @@ export class AuthService {
     return await this.generateTokens({
       id: user.id,
       handle: user.handle,
-      role: user.role.name,
+      role: user.role,
     });
   }
 

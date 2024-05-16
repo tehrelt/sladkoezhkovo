@@ -1,4 +1,14 @@
-import { Controller, Get, Logger, Patch, UploadedFile } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Logger,
+  Patch,
+  UploadedFile,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AccountService } from './account.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileDto } from 'src/auth/dto/profile.dto';
@@ -7,6 +17,9 @@ import { User } from 'src/auth/decorators/user.decorator';
 import { UserClaims } from 'src/auth/dto/user-claims.dto';
 import { AvatarUpdateResponseDto } from './dto/update-avatar.dto';
 import { UploadFile } from 'src/decorators/upload.decorator';
+import { CreateFactoryDto } from './dto/create-factory.dto';
+import { ListDto } from 'src/dto/list.dto';
+import { Factory } from 'src/factories/entities/factory.entity';
 
 @ApiTags('Аккаунт пользователя')
 @Controller('account')
@@ -36,5 +49,24 @@ export class AccountController {
   ): Promise<AvatarUpdateResponseDto> {
     const link: string = await this.service.updateAvatar(user.id, file);
     return { link };
+  }
+
+  @Post('/add-factory')
+  @ApiOperation({ summary: 'Добавление нового фабрики' })
+  @RequiredAuth('FACTORY_OWNER')
+  @UsePipes(ValidationPipe)
+  @ApiResponse({ status: 200 })
+  async addFactory(
+    @User('id') id: string,
+    @Body() dto: CreateFactoryDto,
+  ): Promise<void> {
+    await this.service.createFactory(id, dto);
+  }
+
+  @Get('/factories')
+  @ApiOperation({ summary: 'Получение всех фабрик' })
+  @RequiredAuth('FACTORY_OWNER')
+  async getFactories(@User('id') userId: string): Promise<ListDto<Factory>> {
+    return await this.service.getFactories(userId);
   }
 }

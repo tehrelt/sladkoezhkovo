@@ -2,12 +2,11 @@ import { SetMetadata, UseGuards, applyDecorators } from '@nestjs/common';
 import { RoleGuard } from '../guards/roles.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '../guards/auth.guard';
+import { ROLE } from 'src/enum/role.enum';
 
 export const ROLES_METADATA = 'roles-metadata';
 
-export const RequiredAuth = (
-  ...roles: ('admin' | 'moderator' | 'shop_owner' | 'factory_owner')[]
-) =>
+export const RequiredAuth = (...roles: ROLE[]) =>
   applyDecorators(
     ApiBearerAuth(),
     roles.length > 0

@@ -1,15 +1,12 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { isUUID } from 'class-validator';
+import { isEmail, isUUID } from 'class-validator';
 import { uuidv7 } from 'uuidv7';
 import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
 import { Prisma } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -32,56 +29,52 @@ export class UsersService {
         middleName: dto.middleName,
         handle: dto.handle,
         password: dto.password,
-        role: { connect: { name: dto.role } },
+        role: dto.role,
       },
     });
   }
 
   async findAll(filters: Prisma.UserWhereInput) {
-    return await this.prisma.user.findMany({
-      where: { ...filters },
-      orderBy: { createdAt: 'asc' },
-      include: { role: true, image: true },
-    });
+    return {
+      users: await this.prisma.user.findMany({
+        where: { ...filters },
+        orderBy: { createdAt: 'asc' },
+        include: { image: true },
+      }),
+      count: await this.prisma.user.count({
+        where: { ...filters },
+      }),
+    };
   }
 
   async findOne(slug: string) {
-    const u = isUUID(slug) ? this.findById(slug) : this.findByHandle(slug);
+    const u = isUUID(slug)
+      ? this.findById(slug)
+      : isEmail(slug)
+        ? this.findByEmail(slug)
+        : this.findByHandle(slug);
     return await u;
   }
 
   async findById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id },
-      include: { role: true, image: true },
+      include: { image: true },
     });
   }
 
   async findByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: { email },
-      include: { role: true, image: true },
+      include: { image: true },
     });
   }
 
   async findByHandle(handle: string) {
     return await this.prisma.user.findUnique({
       where: { handle },
-      include: { role: true, image: true },
+      include: { image: true },
     });
-  }
-
-  async promote(slug: string, roleName: string) {
-    this.logger.verbose('promoting user', { slug, role: roleName });
-    try {
-      return await this.prisma.user.update({
-        data: { role: { connect: { name: roleName } } },
-        where: { handle: slug },
-      });
-    } catch (error) {
-      this.logger.error('cannot promote user', { slug, roleName, error });
-      throw new InternalServerErrorException();
-    }
   }
 
   async updateAvatar(id: string, file: Express.Multer.File): Promise<string> {
@@ -105,5 +98,15 @@ export class UsersService {
     this.logger.verbose('getting avatar link', { fileName });
     const link = await this.minio.getFileUrl(fileName, Bucket.USER);
     return link;
+  }
+
+  async update(id: string, dto: UpdateUserDto) {
+    return await this.prisma.user.update({
+      data: {
+        ...dto,
+        updatedAt: new Date(),
+      },
+      where: { id },
+    });
   }
 }

@@ -178,34 +178,46 @@ model Image {
   @@map("images")
 }
 
+enum Role {
+  ADMIN
+  MODERATOR
+  SHOP_OWNER
+  FACTORY_OWNER
+}
+
 model User {
-  id         String    @id
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime? @map("updated_at")
-  handle     String    @unique
-  email      String    @unique
-  roleId     String    @map("role_id")
-  lastName   String    @map("last_name")
-  firstName  String    @map("first_name")
-  middleName String    @map("middle_name")
-  password   String
-  // phoneNumber String    @unique @map("phone_number")
-  imageId    String?   @map("image_id")
-  factories  Factory[]
-  shops      Shop[]
-  image      Image?    @relation(fields: [imageId], references: [id], onUpdate: SetNull)
-  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  id          String    @id
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @map("updated_at")
+  handle      String    @unique
+  email       String    @unique
+  lastName    String    @map("last_name")
+  firstName   String    @map("first_name")
+  middleName  String    @map("middle_name")
+  password    String
+  phoneNumber String?   @unique @map("phone_number")
+  imageId     String?   @map("image_id")
+  factories   Factory[]
+  shops       Shop[]
+  image       Image?    @relation(fields: [imageId], references: [id], onUpdate: SetNull)
+  role        Role
 
   @@map("users")
 }
 
-model Role {
-  id        String    @id
+model Application {
+  id         String   @id
+  roleId     String?
+  lastName   String
+  firstName  String
+  middleName String
+  handle     String   @unique
+  email      String   @unique
+  approved   Boolean?
+  role       Role
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @map("updated_at")
-  name      String    @unique
-  authority Int
-  users     User[]
 
-  @@map("roles")
+  @@map("applications")
 }

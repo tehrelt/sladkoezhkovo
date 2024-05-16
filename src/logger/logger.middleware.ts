@@ -22,6 +22,7 @@ export class LoggerMiddleware implements NestMiddleware {
         this.logger.log(
           `${method} | ${delta}ms | ${ip} | ${statusCode} | ${originalUrl}`,
         );
+        // this.logger.verbose(await res.json());
       }
     });
 

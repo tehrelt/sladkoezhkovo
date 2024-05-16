@@ -24,6 +24,7 @@ services:
   minio:
     image: minio/minio:RELEASE.2024-03-30T09-41-56Z.fips
     container_name: minio
+    restart: always
     volumes:
       - miniodata:/data
     ports:

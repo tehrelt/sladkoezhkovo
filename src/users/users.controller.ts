@@ -10,8 +10,10 @@ import {
 import { UsersService } from './users.service';
 import { ApiTags } from '@nestjs/swagger';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
-import { PromoteUserDto } from './dto/promote-user.dto';
 import { User } from './entities/user.entity';
+import { ListDto } from 'src/dto/list.dto';
+import { ROLE } from 'src/enum/role.enum';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('Пользователи')
 @Controller('users')
@@ -21,15 +23,16 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @RequiredAuth('admin')
-  async findAll(@Query('role') role?: string) {
-    const uu = await this.usersService.findAll({
-      role: role ? { name: role } : undefined,
+  @RequiredAuth('ADMIN')
+  async findAll(@Query('role') role?: string): Promise<ListDto<User>> {
+    const r: ROLE = role ? (role as ROLE) : undefined;
+    const { users: uu, count } = await this.usersService.findAll({
+      role: r,
     });
 
     this.logger.log(`findAll`, uu);
 
-    const dtos = await Promise.all(
+    const items = await Promise.all(
       uu.map(async (u) => {
         const image = u.image
           ? await this.usersService.getAvatarLink(u.image?.name)
@@ -41,7 +44,7 @@ export class UsersController {
           middleName: u.middleName,
           handle: u.handle,
           email: u.email,
-          role: u.role.name,
+          role: u.role,
           imageLink: image,
           createdAt: u.createdAt,
           updatedAt: u.updatedAt,
@@ -49,12 +52,12 @@ export class UsersController {
         return dto;
       }),
     );
-    this.logger.log(`dto`, dtos);
-    return dtos;
+    this.logger.log({ items, count });
+    return { items, count };
   }
 
   @Get(':id')
-  @RequiredAuth('admin')
+  @RequiredAuth('ADMIN')
   async findOne(@Param('id') id: string): Promise<User> {
     const u = await this.usersService.findOne(id);
     const image = u.image
@@ -67,16 +70,16 @@ export class UsersController {
       middleName: u.middleName,
       handle: u.handle,
       email: u.email,
-      role: u.role.name,
+      role: u.role,
       imageLink: image,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
     };
   }
 
-  @Patch(':slug')
-  @RequiredAuth('admin')
-  async promoteUser(@Param('slug') slug: string, @Body() dto: PromoteUserDto) {
-    return await this.usersService.promote(slug, dto.role);
+  @Patch(':id')
+  @RequiredAuth('ADMIN')
+  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+    return this.usersService.update(id, dto);
   }
 }

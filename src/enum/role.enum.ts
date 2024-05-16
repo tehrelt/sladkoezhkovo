@@ -1,0 +1,8 @@
+// export enum ROLE {
+//   ADMIN = 'ADMIN',
+//   MODERATOR = 'MODERATOR',
+//   SHOP_OWNER = 'SHOP_OWNER',
+//   FACTORY_OWNER = 'FACTORY_OWNER',
+// }
+
+export type ROLE = 'ADMIN' | 'MODERATOR' | 'SHOP_OWNER' | 'FACTORY_OWNER';

@@ -3,6 +3,8 @@ import { CreateCityDto } from './dto/create-city.dto';
 import { UpdateCityDto } from './dto/update-city.dto';
 import { uuidv7 } from 'uuidv7';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ListDto } from 'src/dto/list.dto';
+import { City } from '@prisma/client';
 
 @Injectable()
 export class CitiesService {
@@ -23,10 +25,13 @@ export class CitiesService {
     });
   }
 
-  async findAll() {
+  async findAll(): Promise<ListDto<City>> {
     this.logger.verbose('getting all cities');
 
-    return await this.prisma.city.findMany();
+    return {
+      items: await this.prisma.city.findMany(),
+      count: await this.prisma.city.count(),
+    };
   }
 
   async findOne(id: string) {

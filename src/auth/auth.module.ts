@@ -9,6 +9,7 @@ import { LoggerModule } from 'src/logger/logger.module';
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
   imports: [JwtModule, UsersModule, RedisModule, LoggerModule],
 })
 export class AuthModule {}
