@@ -8,6 +8,7 @@ import { Factory } from './entities/factory.entity';
 import { ProductsService } from 'src/products/products.service';
 import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
+import { UpdateFactoryDto } from './dto/update-factory.dto';
 
 @Injectable()
 export class FactoriesService {
@@ -104,5 +105,28 @@ export class FactoriesService {
         ? await this.minio.getFileUrl(f.image.name, Bucket.FACTORY)
         : undefined,
     };
+  }
+
+  async update(id: string, dto: UpdateFactoryDto) {
+    const image = dto.file
+      ? await this.minio.uploadFile(dto.file, Bucket.FACTORY)
+      : undefined;
+
+    const f = await this.prisma.factory.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        phoneNumber: dto.phoneNumber,
+        // year: dto.year,
+        // city: { connect: { id: dto.cityId } },
+        // propertyType: { connect: { id: dto.propertyTypeId } },
+        image: dto.file
+          ? { create: { id: image.id, name: image.fileName } }
+          : undefined,
+        updatedAt: new Date(),
+      },
+    });
+
+    return f;
   }
 }

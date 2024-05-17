@@ -1,7 +1,16 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  UploadedFile,
+} from '@nestjs/common';
 import { FactoriesService } from './factories.service';
 import { ApiTags } from '@nestjs/swagger';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
+import { UpdateFactoryDto } from './dto/update-factory.dto';
+import { UploadFile } from 'src/decorators/upload.decorator';
 
 @ApiTags('Фабрики')
 @Controller('factories')
@@ -30,10 +39,16 @@ export class FactoriesController {
     return this.factoriesService.findProducts(slug);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateFactoryDto: UpdateFactoryDto) {
-  //   return this.factoriesService.update(+id, updateFactoryDto);
-  // }
+  @Patch(':id')
+  @RequiredAuth()
+  @UploadFile('file')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateFactoryDto,
+    @UploadedFile('file') file?: Express.Multer.File,
+  ) {
+    return this.factoriesService.update(id, { ...dto, file });
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {
