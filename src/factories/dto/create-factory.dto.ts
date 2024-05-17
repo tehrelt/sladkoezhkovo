@@ -15,4 +15,6 @@ export class CreateFactoryDto {
   ownerId: string;
   @ApiProperty()
   year: number;
+  @ApiProperty()
+  file?: Express.Multer.File;
 }

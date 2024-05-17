@@ -27,7 +27,7 @@ export class ConfectionarytypesController {
   }
 
   @Get()
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findAll() {
     return this.confectionarytypesService.findAll();
   }

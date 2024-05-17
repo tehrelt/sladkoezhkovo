@@ -15,4 +15,5 @@ export class Factory {
   phoneNumber: string;
   createdAt: Date;
   updatedAt: Date;
+  image?: string;
 }

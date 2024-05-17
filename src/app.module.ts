@@ -17,6 +17,7 @@ import { UnitsModule } from './units/units.module';
 import { PackagesModule } from './packages/packages.module';
 import { ConfectionarytypesModule } from './confectionarytypes/confectionarytypes.module';
 import { FactoriesModule } from './factories/factories.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { FactoriesModule } from './factories/factories.module';
     PackagesModule,
     ConfectionarytypesModule,
     FactoriesModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],

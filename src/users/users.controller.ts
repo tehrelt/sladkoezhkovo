@@ -57,7 +57,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   async findOne(@Param('id') id: string): Promise<User> {
     const u = await this.usersService.findOne(id);
     const image = u.image

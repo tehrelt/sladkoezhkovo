@@ -1,6 +1,7 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { FactoriesService } from './factories.service';
 import { ApiTags } from '@nestjs/swagger';
+import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Фабрики')
 @Controller('factories')
@@ -17,10 +18,17 @@ export class FactoriesController {
   //   return this.factoriesService.findAll();
   // }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.factoriesService.findOne(+id);
-  // }
+  @Get(':slug')
+  @RequiredAuth()
+  findOne(@Param('slug') slug: string) {
+    return this.factoriesService.findOne(slug);
+  }
+
+  @Get(':slug/products')
+  @RequiredAuth()
+  findProducts(@Param('slug') slug: string) {
+    return this.factoriesService.findProducts(slug);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateFactoryDto: UpdateFactoryDto) {

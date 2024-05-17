@@ -98,6 +98,8 @@ model Product {
   name                String
   confectionaryTypeId String            @map("confectionary_type_id")
   factoryId           String            @map("factory_id")
+  imageId             String?           @map("image_id")
+  image               Image?            @relation(fields: [imageId], references: [id])
   catalogueEntries    CatalogueEntry[]
   confectionaryType   ConfectionaryType @relation(fields: [confectionaryTypeId], references: [id], onDelete: Cascade)
   factory             Factory           @relation(fields: [factoryId], references: [id], onDelete: Cascade)
@@ -174,6 +176,7 @@ model Image {
   factories        Factory[]
   shops            Shop[]
   User             User[]
+  Product          Product[]
 
   @@map("images")
 }

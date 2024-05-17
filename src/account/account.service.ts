@@ -48,8 +48,12 @@ export class AccountService {
     return this.usersService.updateAvatar(id, file);
   }
 
-  async createFactory(id: string, dto: CreateFactoryDto) {
-    return await this.factoryService.create({ ...dto, ownerId: id });
+  async createFactory(
+    id: string,
+    dto: CreateFactoryDto,
+    file?: Express.Multer.File,
+  ) {
+    return await this.factoryService.create({ ...dto, ownerId: id, file });
   }
 
   async getFactories(id: string): Promise<ListDto<Factory>> {
