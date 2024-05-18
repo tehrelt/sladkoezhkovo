@@ -9,6 +9,7 @@ import {
   UsePipes,
   ValidationPipe,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -19,25 +20,28 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Ед. измерения')
 @Controller('units')
 export class UnitsController {
-  constructor(private readonly unitsService: UnitsService) {}
+  constructor(private readonly service: UnitsService) {}
 
   @Post()
   @RequiredAuth('ADMIN')
   @UsePipes(ValidationPipe)
   create(@Body() createUnitDto: CreateUnitDto) {
-    return this.unitsService.create(createUnitDto);
+    return this.service.create(createUnitDto);
   }
 
   @Get()
-  @RequiredAuth('ADMIN')
-  findAll() {
-    return this.unitsService.findAll();
+  @RequiredAuth()
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findOne(@Param('id') id: string) {
-    const unit = this.unitsService.findOne(id);
+    const unit = this.service.findOne(id);
     if (!unit) {
       throw new NotFoundException();
     }
@@ -48,12 +52,12 @@ export class UnitsController {
   @RequiredAuth('ADMIN')
   @UsePipes(ValidationPipe)
   update(@Param('id') id: string, @Body() updateUnitDto: UpdateUnitDto) {
-    return this.unitsService.update(id, updateUnitDto);
+    return this.service.update(id, updateUnitDto);
   }
 
   @Delete(':id')
   @RequiredAuth('ADMIN')
   remove(@Param('id') id: string) {
-    return this.unitsService.remove(id);
+    return this.service.remove(id);
   }
 }

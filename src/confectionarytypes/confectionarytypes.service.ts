@@ -6,6 +6,7 @@ import { uuidv7 } from 'uuidv7';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListDto } from 'src/dto/list.dto';
 import { ConfectionaryType } from './entities/confectionarytype.entity';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class ConfectionaryTypesService {
@@ -19,11 +20,17 @@ export class ConfectionaryTypesService {
   }
 
   async findAll(
-    filters?: Prisma.ConfectionaryTypeWhereInput,
+    filters?: FiltersDto & Prisma.ConfectionaryTypeWhereInput,
   ): Promise<ListDto<ConfectionaryType>> {
+    const { skip, take, ...where } = filters;
+
     return {
-      items: await this.prisma.confectionaryType.findMany({ where: filters }),
-      count: await this.prisma.confectionaryType.count({ where: filters }),
+      items: await this.prisma.confectionaryType.findMany({
+        where,
+        skip,
+        take,
+      }),
+      count: await this.prisma.confectionaryType.count({ where }),
     };
   }
 

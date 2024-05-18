@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ConfectionaryTypesService } from './confectionarytypes.service';
 import { CreateConfectionaryTypeDto } from './dto/create-confectionarytype.dto';
@@ -14,28 +15,29 @@ import { ApiTags } from '@nestjs/swagger';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Тип сладости')
-@Controller('confectionarytypes')
+@Controller('confectionary-types')
 export class ConfectionarytypesController {
-  constructor(
-    private readonly confectionarytypesService: ConfectionaryTypesService,
-  ) {}
+  constructor(private readonly service: ConfectionaryTypesService) {}
 
   @Post()
   @RequiredAuth('ADMIN')
   create(@Body() createConfectionarytypeDto: CreateConfectionaryTypeDto) {
-    return this.confectionarytypesService.create(createConfectionarytypeDto);
+    return this.service.create(createConfectionarytypeDto);
   }
 
   @Get()
   @RequiredAuth()
-  findAll() {
-    return this.confectionarytypesService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
   @RequiredAuth('ADMIN')
   findOne(@Param('id') id: string) {
-    return this.confectionarytypesService.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
@@ -44,15 +46,12 @@ export class ConfectionarytypesController {
     @Param('id') id: string,
     @Body() updateConfectionarytypeDto: UpdateConfectionarytypeDto,
   ) {
-    return this.confectionarytypesService.update(
-      id,
-      updateConfectionarytypeDto,
-    );
+    return this.service.update(id, updateConfectionarytypeDto);
   }
 
   @Delete(':id')
   @RequiredAuth('ADMIN')
   remove(@Param('id') id: string) {
-    return this.confectionarytypesService.remove(id);
+    return this.service.remove(id);
   }
 }

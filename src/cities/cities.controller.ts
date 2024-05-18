@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { CitiesService } from './cities.service';
 import { CreateCityDto } from './dto/create-city.dto';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
@@ -19,8 +19,11 @@ export class CitiesController {
 
   @Get()
   @RequiredAuth()
-  async findAll(): Promise<ListDto<City>> {
-    return this.citiesService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.citiesService.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')

@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { ListDto } from 'src/dto/list.dto';
 import { Unit } from './entities/unit.entity';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class UnitsService {
@@ -18,13 +19,19 @@ export class UnitsService {
     return await this.prisma.unit.create({ data: { id, ...dto } });
   }
 
-  async findAll(filters?: Prisma.UnitWhereInput): Promise<ListDto<Unit>> {
+  async findAll(
+    filters?: FiltersDto & Prisma.UnitWhereInput,
+  ): Promise<ListDto<Unit>> {
+    const { skip, take, ...where } = filters;
+
     return {
       items: await this.prisma.unit.findMany({
-        where: filters,
+        where,
+        skip,
+        take,
         orderBy: { name: 'asc' },
       }),
-      count: await this.prisma.unit.count({ where: filters }),
+      count: await this.prisma.unit.count({ where }),
     };
   }
 

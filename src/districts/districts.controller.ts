@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { DistrictsService } from './districts.service';
 import { CreateDistrictDto } from './dto/create-district.dto';
@@ -16,24 +17,27 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Районы')
 @Controller('districts')
 export class DistrictsController {
-  constructor(private readonly districtsService: DistrictsService) {}
+  constructor(private readonly service: DistrictsService) {}
 
   @Post()
   @RequiredAuth('ADMIN', 'MODERATOR')
   create(@Body() createDistrictDto: CreateDistrictDto) {
-    return this.districtsService.create(createDistrictDto);
+    return this.service.create(createDistrictDto);
   }
 
   @Get()
-  @RequiredAuth('ADMIN', 'MODERATOR')
-  findAll() {
-    return this.districtsService.findAll();
+  @RequiredAuth()
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
   @RequiredAuth('ADMIN', 'MODERATOR')
   findOne(@Param('id') id: string) {
-    return this.districtsService.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
@@ -42,12 +46,12 @@ export class DistrictsController {
     @Param('id') id: string,
     @Body() updateDistrictDto: UpdateDistrictDto,
   ) {
-    return this.districtsService.update(id, updateDistrictDto);
+    return this.service.update(id, updateDistrictDto);
   }
 
   @Delete(':id')
   @RequiredAuth('ADMIN', 'MODERATOR')
   remove(@Param('id') id: string) {
-    return this.districtsService.remove(id);
+    return this.service.remove(id);
   }
 }

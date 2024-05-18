@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PropertyTypesService } from './propertytypes.service';
 import { CreatePropertyTypeDto } from './dto/create-propertytype.dto';
@@ -14,26 +15,29 @@ import { ApiTags } from '@nestjs/swagger';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 
 @ApiTags('Типы собственности')
-@Controller('propertytypes')
+@Controller('property-types')
 export class PropertyTypesController {
-  constructor(private readonly propertytypesService: PropertyTypesService) {}
+  constructor(private readonly service: PropertyTypesService) {}
 
   @Post()
   @RequiredAuth('ADMIN')
   create(@Body() createPropertytypeDto: CreatePropertyTypeDto) {
-    return this.propertytypesService.create(createPropertytypeDto);
+    return this.service.create(createPropertytypeDto);
   }
 
   @Get()
   @RequiredAuth()
-  findAll() {
-    return this.propertytypesService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
   @RequiredAuth()
   findOne(@Param('id') id: string) {
-    return this.propertytypesService.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
@@ -42,12 +46,12 @@ export class PropertyTypesController {
     @Param('id') id: string,
     @Body() updatePropertytypeDto: UpdatePropertyTypeDto,
   ) {
-    return this.propertytypesService.update(id, updatePropertytypeDto);
+    return this.service.update(id, updatePropertytypeDto);
   }
 
   @Delete(':id')
   @RequiredAuth('ADMIN')
   remove(@Param('id') id: string) {
-    return this.propertytypesService.remove(id);
+    return this.service.remove(id);
   }
 }

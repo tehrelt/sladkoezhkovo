@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   UploadedFile,
 } from '@nestjs/common';
 import { FactoriesService } from './factories.service';
@@ -15,28 +16,26 @@ import { UploadFile } from 'src/decorators/upload.decorator';
 @ApiTags('Фабрики')
 @Controller('factories')
 export class FactoriesController {
-  constructor(private readonly factoriesService: FactoriesService) {}
+  constructor(private readonly service: FactoriesService) {}
 
-  // @Post()
-  // create(@Body() createFactoryDto: CreateFactoryDto) {
-  //   return this.factoriesService.create(createFactoryDto);
-  // }
-
-  // @Get()
-  // findAll() {
-  //   return this.factoriesService.findAll();
-  // }
+  @Get()
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
+  }
 
   @Get(':slug')
   @RequiredAuth()
   findOne(@Param('slug') slug: string) {
-    return this.factoriesService.findOne(slug);
+    return this.service.findOne(slug);
   }
 
   @Get(':slug/products')
   @RequiredAuth()
   findProducts(@Param('slug') slug: string) {
-    return this.factoriesService.findProducts(slug);
+    return this.service.findProducts(slug);
   }
 
   @Patch(':id')
@@ -47,7 +46,7 @@ export class FactoriesController {
     @Body() dto: UpdateFactoryDto,
     @UploadedFile('file') file?: Express.Multer.File,
   ) {
-    return this.factoriesService.update(id, { ...dto, file });
+    return this.service.update(id, { ...dto, file });
   }
 
   // @Delete(':id')

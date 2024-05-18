@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { ListDto } from 'src/dto/list.dto';
 import { Package } from './entities/package.entity';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class PackagesService {
@@ -18,10 +19,18 @@ export class PackagesService {
     return await this.prisma.package.create({ data: { ...dto, id } });
   }
 
-  async findAll(filters?: Prisma.PackageWhereInput): Promise<ListDto<Package>> {
+  async findAll(
+    filters?: FiltersDto & Prisma.PackageWhereInput,
+  ): Promise<ListDto<Package>> {
+    const { skip, take, ...where } = filters;
+
     return {
-      items: await this.prisma.package.findMany({ where: filters }),
-      count: await this.prisma.package.count({ where: filters }),
+      items: await this.prisma.package.findMany({
+        where,
+        skip,
+        take,
+      }),
+      count: await this.prisma.package.count({ where }),
     };
   }
 

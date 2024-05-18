@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PropertyType } from './entities/propertytype.entity';
 import { ListDto } from 'src/dto/list.dto';
 import { Prisma } from '@prisma/client';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class PropertyTypesService {
@@ -19,16 +20,18 @@ export class PropertyTypesService {
   }
 
   async findAll(
-    filters?: Prisma.PropertyTypeWhereInput,
+    filters?: FiltersDto & Prisma.PropertyTypeWhereInput,
   ): Promise<ListDto<PropertyType>> {
+    const { skip, take, ...where } = filters;
+
     return {
       items: await this.prisma.propertyType.findMany({
-        where: { ...filters },
+        where,
+        skip,
+        take,
         orderBy: { createdAt: 'asc' },
       }),
-      count: await this.prisma.propertyType.count({
-        where: { ...filters },
-      }),
+      count: await this.prisma.propertyType.count({ where }),
     };
   }
 

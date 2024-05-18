@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PackagesService } from './packages.service';
 import { CreatePackageDto } from './dto/create-package.dto';
@@ -16,35 +17,38 @@ import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 @ApiTags('Тип фасовки')
 @Controller('packages')
 export class PackagesController {
-  constructor(private readonly packagesService: PackagesService) {}
+  constructor(private readonly service: PackagesService) {}
 
   @Post()
   @RequiredAuth('ADMIN')
   create(@Body() createPackageDto: CreatePackageDto) {
-    return this.packagesService.create(createPackageDto);
+    return this.service.create(createPackageDto);
   }
 
   @Get()
-  @RequiredAuth('ADMIN')
-  findAll() {
-    return this.packagesService.findAll();
+  @RequiredAuth()
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.service.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
-  @RequiredAuth('ADMIN')
+  @RequiredAuth()
   findOne(@Param('id') id: string) {
-    return this.packagesService.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Patch(':id')
   @RequiredAuth('ADMIN')
   update(@Param('id') id: string, @Body() updatePackageDto: UpdatePackageDto) {
-    return this.packagesService.update(id, updatePackageDto);
+    return this.service.update(id, updatePackageDto);
   }
 
   @Delete(':id')
   @RequiredAuth('ADMIN')
   remove(@Param('id') id: string) {
-    return this.packagesService.remove(id);
+    return this.service.remove(id);
   }
 }

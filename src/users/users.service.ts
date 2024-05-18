@@ -7,6 +7,7 @@ import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
 import { Prisma } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class UsersService {
@@ -34,16 +35,18 @@ export class UsersService {
     });
   }
 
-  async findAll(filters: Prisma.UserWhereInput) {
+  async findAll(filters?: FiltersDto & Prisma.UserWhereInput) {
+    const { skip, take, ...where } = filters;
+
     return {
       users: await this.prisma.user.findMany({
-        where: { ...filters },
+        where,
+        skip,
+        take,
         orderBy: { createdAt: 'asc' },
         include: { image: true },
       }),
-      count: await this.prisma.user.count({
-        where: { ...filters },
-      }),
+      count: await this.prisma.user.count({ where }),
     };
   }
 

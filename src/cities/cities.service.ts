@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateCityDto } from './dto/create-city.dto';
-import { UpdateCityDto } from './dto/update-city.dto';
 import { uuidv7 } from 'uuidv7';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListDto } from 'src/dto/list.dto';
-import { City } from '@prisma/client';
+import { City, Prisma } from '@prisma/client';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class CitiesService {
@@ -25,12 +25,24 @@ export class CitiesService {
     });
   }
 
-  async findAll(): Promise<ListDto<City>> {
-    this.logger.verbose('getting all cities');
+  async findAll(
+    f?: FiltersDto & Prisma.CityWhereInput,
+  ): Promise<ListDto<City>> {
+    const { skip, take, ...where } = f;
+
+    this.logger.verbose('getting all cities', skip, take, where);
+
+    const items = await this.prisma.city.findMany({
+      where,
+      skip,
+      take,
+    });
+
+    this.logger.verbose('got all cities', items);
 
     return {
-      items: await this.prisma.city.findMany(),
-      count: await this.prisma.city.count(),
+      items,
+      count: await this.prisma.city.count({ where }),
     };
   }
 

@@ -8,6 +8,8 @@ import { ListDto } from 'src/dto/list.dto';
 import { Product } from './entities/product.entity';
 import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
+import { User } from 'src/users/entities/user.entity';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class ProductsService {
@@ -42,19 +44,26 @@ export class ProductsService {
     });
   }
 
-  async findAll(filters?: Prisma.ProductWhereInput): Promise<ListDto<Product>> {
+  async findAll(
+    filters?: FiltersDto & Prisma.ProductWhereInput,
+  ): Promise<ListDto<Product>> {
+    this.logger.verbose(`Finding all products`, filters);
+
+    const { skip, take, ...where } = filters;
+
     const products = await this.prisma.product.findMany({
-      where: filters,
+      where,
+      skip,
+      take,
       include: {
         confectionaryType: true,
         factory: true,
         image: true,
+        catalogueEntries: true,
       },
     });
 
-    const count = await this.prisma.product.count({
-      where: filters,
-    });
+    const count = await this.prisma.product.count({ where });
 
     const pp: Product[] = await Promise.all(
       products.map(async (p) => {
@@ -75,6 +84,7 @@ export class ProductsService {
           image: p.image
             ? await this.minio.getFileUrl(p.image.name, Bucket.PRODUCT)
             : undefined,
+          catalogueEntries: p.catalogueEntries,
         };
 
         return d;
@@ -87,7 +97,55 @@ export class ProductsService {
     };
   }
 
-  findOne(id: string) {}
+  async findOne(id: string): Promise<Product> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        catalogueEntries: true,
+        factory: true,
+        image: true,
+        confectionaryType: true,
+      },
+    });
+
+    const image = product.image
+      ? await this.minio.getFileUrl(product.image.name, Bucket.PRODUCT)
+      : undefined;
+
+    return {
+      confectionaryType: product.confectionaryType,
+      factory: product.factory,
+      id: product.id,
+      name: product.name,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      image,
+      catalogueEntries: product.catalogueEntries.map((e) => ({
+        id: e.id,
+        price: e.price,
+        quantity: e.quantity,
+      })),
+    };
+  }
+
+  async owner(id: string): Promise<{ handle: string }> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        factory: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    const u = product.factory.user;
+
+    return {
+      handle: u.handle,
+    };
+  }
 
   update(id: string, dto: UpdateProductDto) {}
 

@@ -1,3 +1,5 @@
+import { CatalogueEntry } from 'src/catalogue/entities/catalogue.entity';
+
 export class Product {
   id: string;
   name: string;
@@ -13,4 +15,5 @@ export class Product {
   createdAt: Date;
   updatedAt: Date;
   image?: string;
+  catalogueEntries?: Partial<CatalogueEntry>[];
 }

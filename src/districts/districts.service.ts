@@ -6,6 +6,7 @@ import { uuidv7 } from 'uuidv7';
 import { District } from './entities/district.entity';
 import { Prisma } from '@prisma/client';
 import { ListDto } from 'src/dto/list.dto';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class DistrictsService {
@@ -24,13 +25,17 @@ export class DistrictsService {
   }
 
   async findAll(
-    filters?: Prisma.DistrictWhereInput,
+    filters?: FiltersDto & Prisma.DistrictWhereInput,
   ): Promise<ListDto<District>> {
+    const { skip, take, ...where } = filters;
+
     return {
       items: (
         await this.prisma.district.findMany({
+          where,
+          skip,
+          take,
           include: { city: true },
-          where: { ...filters },
         })
       ).map((d) => ({
         id: d.id,
@@ -40,7 +45,7 @@ export class DistrictsService {
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
       })),
-      count: await this.prisma.district.count({ where: { ...filters } }),
+      count: await this.prisma.district.count({ where }),
     };
   }
 

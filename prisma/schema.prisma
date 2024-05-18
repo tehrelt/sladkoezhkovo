@@ -114,8 +114,8 @@ model CatalogueEntry {
   productId String          @map("product_id")
   packageId String          @map("package_id")
   unitId    String?         @map("unit_id")
-  imageId   String?         @map("image_id")
-  image     Image?          @relation(fields: [imageId], references: [id])
+  price     Decimal         @map("price")
+  quantity  Int             @map("quantity")
   package   Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   unit      Unit?           @relation(fields: [unitId], references: [id])
@@ -168,15 +168,14 @@ model ShipmentEntry {
 }
 
 model Image {
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime?        @map("updated_at")
-  id               String           @id
-  name             String           @unique
-  catalogueEntries CatalogueEntry[]
-  factories        Factory[]
-  shops            Shop[]
-  User             User[]
-  Product          Product[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  id        String    @id
+  name      String    @unique
+  factories Factory[]
+  shops     Shop[]
+  User      User[]
+  Product   Product[]
 
   @@map("images")
 }

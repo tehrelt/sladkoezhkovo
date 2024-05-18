@@ -13,6 +13,8 @@ import { Application } from './entities/application.entity';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from 'src/auth/auth.service';
 import { MailerService } from 'src/mailer/mailer.service';
+import { FiltersDto } from 'src/dto/filters.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ApplicationsService {
@@ -101,8 +103,16 @@ export class ApplicationsService {
     }
   }
 
-  async findAll(): Promise<ListDto<Application>> {
-    const aa = await this.prisma.application.findMany();
+  async findAll(
+    f?: FiltersDto & Prisma.ApplicationWhereInput,
+  ): Promise<ListDto<Application>> {
+    const { skip, take, ...where } = f;
+
+    const aa = await this.prisma.application.findMany({
+      where,
+      skip,
+      take,
+    });
 
     const items: Application[] = aa.map(
       (item): Application => ({
@@ -121,7 +131,7 @@ export class ApplicationsService {
 
     return {
       items,
-      count: await this.prisma.application.count(),
+      count: await this.prisma.application.count({ where }),
     };
   }
 

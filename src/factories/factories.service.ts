@@ -9,6 +9,7 @@ import { ProductsService } from 'src/products/products.service';
 import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
 import { UpdateFactoryDto } from './dto/update-factory.dto';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class FactoriesService {
@@ -43,11 +44,19 @@ export class FactoriesService {
     });
   }
 
-  async findAll(filters?: Prisma.FactoryWhereInput): Promise<ListDto<Factory>> {
+  async findAll(
+    filters?: FiltersDto & Prisma.FactoryWhereInput,
+  ): Promise<ListDto<Factory>> {
     this.logger.verbose(`Getting all factories`, { filters });
+
+    const { skip, take, ...where } = filters;
+
     const items = await this.prisma.factory.findMany({
-      where: filters,
+      where,
+      skip,
+      take,
       include: { city: true, user: true, image: true },
+      orderBy: { createdAt: 'asc' },
     });
 
     const ff: Factory[] = await Promise.all(
@@ -73,7 +82,7 @@ export class FactoriesService {
 
     return {
       items: ff,
-      count: await this.prisma.factory.count({ where: filters }),
+      count: await this.prisma.factory.count({ where }),
     };
   }
 
@@ -81,6 +90,8 @@ export class FactoriesService {
     const pp = await this.productsService.findAll({
       factory: { handle: slug },
     });
+
+    this.logger.verbose(`Getting products for factory`, { slug, pp });
 
     return pp;
   }
@@ -117,9 +128,6 @@ export class FactoriesService {
       data: {
         name: dto.name,
         phoneNumber: dto.phoneNumber,
-        // year: dto.year,
-        // city: { connect: { id: dto.cityId } },
-        // propertyType: { connect: { id: dto.propertyTypeId } },
         image: dto.file
           ? { create: { id: image.id, name: image.fileName } }
           : undefined,

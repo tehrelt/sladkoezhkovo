@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -17,8 +25,11 @@ export class ApplicationsController {
 
   @Get()
   @RequiredAuth('ADMIN', 'MODERATOR')
-  findAll() {
-    return this.applicationsService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+    return this.applicationsService.findAll({
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   @Get(':id')
