@@ -101,10 +101,10 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
-        catalogueEntries: true,
-        factory: true,
         image: true,
+        factory: true,
         confectionaryType: true,
+        catalogueEntries: { include: { package: true, unit: true } },
       },
     });
 
@@ -124,6 +124,8 @@ export class ProductsService {
         id: e.id,
         price: e.price,
         quantity: e.quantity,
+        unit: e.unit,
+        package: e.package,
       })),
     };
   }

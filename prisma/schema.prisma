@@ -116,6 +116,7 @@ model CatalogueEntry {
   unitId    String?         @map("unit_id")
   price     Decimal         @map("price")
   quantity  Int             @map("quantity")
+  weight    Decimal         @map("weight")
   package   Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   unit      Unit?           @relation(fields: [unitId], references: [id])

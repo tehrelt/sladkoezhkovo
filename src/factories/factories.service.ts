@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { CreateFactoryDto } from './dto/create-factory.dto';
 import { uuidv7 } from 'uuidv7';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,6 +15,7 @@ import { MinioService } from 'src/minio/minio.service';
 import { Bucket } from 'src/minio/minio.consts';
 import { UpdateFactoryDto } from './dto/update-factory.dto';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class FactoriesService {
@@ -22,26 +28,39 @@ export class FactoriesService {
 
   async create(dto: CreateFactoryDto) {
     const id = uuidv7();
-    this.logger.verbose(`Creating a new factory`, { id, dto });
+    // this.logger.verbose(`Creating a new factory`, { id, dto });
     const image = dto.file
       ? await this.minio.uploadFile(dto.file, Bucket.FACTORY)
       : undefined;
 
-    return await this.prisma.factory.create({
-      data: {
-        id,
-        handle: dto.handle,
-        name: dto.name,
-        phoneNumber: dto.phoneNumber,
-        year: dto.year,
-        user: { connect: { id: dto.ownerId } },
-        city: { connect: { id: dto.cityId } },
-        propertyType: { connect: { id: dto.propertyTypeId } },
-        image: image
-          ? { create: { id: image.id, name: image.fileName } }
-          : null,
-      },
-    });
+    try {
+      const f = await this.prisma.factory.create({
+        data: {
+          id,
+          handle: dto.handle,
+          name: dto.name,
+          phoneNumber: dto.phoneNumber,
+          year: dto.year,
+          user: { connect: { id: dto.ownerId } },
+          city: { connect: { id: dto.cityId } },
+          propertyType: { connect: { id: dto.propertyTypeId } },
+          image: image
+            ? { create: { id: image.id, name: image.fileName } }
+            : null,
+        },
+      });
+      return f;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        console.log('error', error);
+
+        if (error.code === 'P2002') {
+          throw new ConflictException('Фабрика уже существует');
+        }
+
+        throw new InternalServerErrorException(error.message);
+      }
+    }
   }
 
   async findAll(

@@ -5,8 +5,8 @@ import { Unit } from 'src/units/entities/unit.entity';
 export class CatalogueEntry {
   id: string;
   productId: string;
-  unit: Unit;
-  package: Package;
+  unit: Unit | string;
+  package: Package | string;
   price: Decimal;
   quantity: number;
   createdAt: Date;

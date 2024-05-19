@@ -75,7 +75,6 @@ export class AuthController {
   }
 
   @Get('refresh')
-  // @RequiredAuth()
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
