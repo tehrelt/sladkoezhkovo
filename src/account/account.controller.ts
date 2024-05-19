@@ -61,8 +61,8 @@ export class AccountController {
     @User('id') id: string,
     @Body() dto: CreateFactoryDto,
     @UploadedFile('file') file?: Express.Multer.File,
-  ): Promise<void> {
-    await this.service.createFactory(
+  ) {
+    return await this.service.createFactory(
       id,
       { ...dto, year: Number(dto.year) },
       file,

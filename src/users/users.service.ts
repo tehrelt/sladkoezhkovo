@@ -35,17 +35,35 @@ export class UsersService {
     });
   }
 
-  async findAll(filters?: FiltersDto & Prisma.UserWhereInput) {
+  async findAll(
+    filters?: FiltersDto & Prisma.UserWhereInput,
+    select?: Prisma.UserSelect,
+  ) {
     const { skip, take, ...where } = filters;
 
-    return {
-      users: await this.prisma.user.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'asc' },
-        include: { image: true },
+    const users = await this.prisma.user.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: 'asc' },
+      include: { image: true },
+    });
+
+    const uu = await Promise.all(
+      users.map(async (u) => {
+        const image = u.image
+          ? await this.minio.getFileUrl(u.image.name, Bucket.USER)
+          : undefined;
+
+        return {
+          ...u,
+          image,
+        };
       }),
+    );
+
+    return {
+      users: uu,
       count: await this.prisma.user.count({ where }),
     };
   }

@@ -35,9 +35,6 @@ export class UsersController {
 
     const items = await Promise.all(
       uu.map(async (u) => {
-        const image = u.image
-          ? await this.service.getAvatarLink(u.image?.name)
-          : null;
         const dto = {
           id: u.id,
           lastName: u.lastName,
@@ -46,7 +43,7 @@ export class UsersController {
           handle: u.handle,
           email: u.email,
           role: u.role,
-          imageLink: image,
+          imageLink: u.image,
           createdAt: u.createdAt,
           updatedAt: u.updatedAt,
         };

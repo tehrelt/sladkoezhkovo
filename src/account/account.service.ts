@@ -53,7 +53,9 @@ export class AccountService {
     dto: CreateFactoryDto,
     file?: Express.Multer.File,
   ) {
-    return await this.factoryService.create({ ...dto, ownerId: id, file });
+    const r = await this.factoryService.create({ ...dto, ownerId: id, file });
+    this.logger.debug('factory created', r);
+    return r;
   }
 
   async getFactories(id: string): Promise<ListDto<Factory>> {
