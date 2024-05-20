@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCartEntryDto } from './dto/create-cart.dto';
-import { UpdateCartDto } from './dto/update-cart.dto';
+import { UpdateCartEntryDto } from './dto/update-cart.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListDto } from 'src/dto/list.dto';
 import { ProductsService } from 'src/products/products.service';
@@ -31,10 +31,11 @@ export class CartService {
   }): Promise<ListDto<any> & { total: Decimal }> {
     const entries = await this.prisma.cart.findMany({
       where: f,
+      orderBy: { catalogueId: 'asc' },
       include: {
         catalogueEntry: {
           include: {
-            package: true,
+            package: { include: { unit: true } },
             product: { include: { image: true } },
           },
         },
@@ -63,11 +64,21 @@ JOIN catalogue ON c.catalogue_id = catalogue.id
 WHERE c.user_id = ${f.userId}
 GROUP BY c.user_id`;
 
-    return { items, count, total: total[0].total };
+    return { items, count, total: total[0] ? total[0].total : 0 };
   }
 
-  update(id: string, dto: UpdateCartDto) {
-    return `This action updates a #${id} cart`;
+  update(catalogueId: string, userId: string, dto: UpdateCartEntryDto) {
+    return this.prisma.cart.update({
+      where: {
+        userId_catalogueId: {
+          catalogueId,
+          userId,
+        },
+      },
+      data: {
+        quantity: dto.quantity,
+      },
+    });
   }
 
   async remove(userId: string, catalogueId: string) {

@@ -9,6 +9,7 @@ import { CartService } from 'src/cart/cart.service';
 import { ListDto } from 'src/dto/list.dto';
 import { CartEntry } from 'src/cart/entities/cart.entity';
 import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
+import { UpdateCartEntryDto } from 'src/cart/dto/update-cart.dto';
 
 @Injectable()
 export class AccountService {
@@ -54,6 +55,11 @@ export class AccountService {
 
   async addToCart(dto: CreateCartEntryDto) {
     const e = await this.cartService.create(dto);
+    return e;
+  }
+
+  async updateCartEntry(dto: UpdateCartEntryDto) {
+    const e = await this.cartService.update(dto.catalogueId, dto.userId, dto);
     return e;
   }
 

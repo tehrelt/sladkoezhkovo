@@ -24,6 +24,7 @@ import { ListDto } from 'src/dto/list.dto';
 import { Factory } from 'src/factories/entities/factory.entity';
 import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
 import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
+import { UpdateCartEntryDto } from 'src/cart/dto/update-cart.dto';
 
 @ApiTags('Аккаунт пользователя')
 @Controller('account')
@@ -62,6 +63,19 @@ export class AccountController {
     this.logger.verbose('adding to cart', { userId, dto });
     const entry = await this.service.addToCart({ ...dto, userId });
     return entry;
+  }
+
+  @Patch('/cart')
+  @ApiOperation({ summary: 'Обновление товара в корзине' })
+  @RequiredAuth()
+  @UsePipes(ValidationPipe)
+  @ApiResponse({ status: 200 })
+  async updateCart(
+    @User('id') userId: string,
+    @Body() dto: UpdateCartEntryDto,
+  ) {
+    this.logger.verbose('updating cart', { userId, dto });
+    await this.service.updateCartEntry({ ...dto, userId });
   }
 
   @Delete('/cart/:id')
