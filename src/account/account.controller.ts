@@ -8,6 +8,8 @@ import {
   UploadedFile,
   UsePipes,
   ValidationPipe,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -21,6 +23,7 @@ import { CreateFactoryDto } from './dto/create-factory.dto';
 import { ListDto } from 'src/dto/list.dto';
 import { Factory } from 'src/factories/entities/factory.entity';
 import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
+import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
 
 @ApiTags('Аккаунт пользователя')
 @Controller('account')
@@ -39,17 +42,39 @@ export class AccountController {
     return user;
   }
 
-  @Patch('/avatar')
-  @ApiOperation({ summary: 'Обновление фотографии профиля' })
+  @Get('/cart')
+  @ApiOperation({ summary: 'Получение корзины пользователя' })
   @RequiredAuth()
-  @UploadFile('file')
+  async cart(@User() { id }: UserClaims) {
+    this.logger.verbose('getting cart', { id });
+    const cart = await this.service.cart(id);
+    return cart;
+  }
+
+  @Post('/cart')
+  @ApiOperation({ summary: 'Добавление товара в корзину' })
+  @RequiredAuth()
+  @UsePipes(ValidationPipe)
+  async addToCart(
+    @User('id') userId: string,
+    @Body() dto: Omit<CreateCartEntryDto, 'userId'>,
+  ) {
+    this.logger.verbose('adding to cart', { userId, dto });
+    const entry = await this.service.addToCart({ ...dto, userId });
+    return entry;
+  }
+
+  @Delete('/cart/:id')
+  @ApiOperation({ summary: 'Удаление товара из корзины' })
+  @RequiredAuth()
+  @UsePipes(ValidationPipe)
   @ApiResponse({ status: 200 })
-  async updateAvatar(
-    @UploadedFile('file') file: Express.Multer.File,
-    @User() user: UserClaims,
-  ): Promise<AvatarUpdateResponseDto> {
-    const link: string = await this.service.updateAvatar(user.id, file);
-    return { link };
+  async removeFromCart(
+    @User('id') userId: string,
+    @Param('id') catalogueId: string,
+  ) {
+    this.logger.verbose('removing from cart', { userId, catalogueId });
+    await this.service.removeFromCart(userId, catalogueId);
   }
 
   @Post('/add-factory')
@@ -93,10 +118,10 @@ export class AccountController {
     );
   }
 
-  @Get('/factories')
-  @ApiOperation({ summary: 'Получение всех фабрик' })
-  @RequiredAuth('FACTORY_OWNER')
-  async getFactories(@User('id') userId: string): Promise<ListDto<Factory>> {
-    return await this.service.getFactories(userId);
-  }
+  // @Get('/factories')
+  // @ApiOperation({ summary: 'Получение всех фабрик' })
+  // @RequiredAuth('FACTORY_OWNER')
+  // async getFactories(@User('id') userId: string): Promise<ListDto<Factory>> {
+  //   return await this.service.getFactories(userId);
+  // }
 }

@@ -11,4 +11,6 @@ export class CreateCatalogueDto {
   price: number;
   @ApiProperty()
   quantity: number;
+  @ApiProperty()
+  unitUsage: number;
 }

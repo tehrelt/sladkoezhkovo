@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ProfileDto } from 'src/auth/dto/profile.dto';
-import { ListDto } from 'src/dto/list.dto';
-import { Factory } from 'src/factories/entities/factory.entity';
 import { FactoriesService } from 'src/factories/factories.service';
 import { UsersService } from 'src/users/users.service';
 import { CreateFactoryDto } from './dto/create-factory.dto';
 import { ShopsService } from 'src/shops/shops.service';
 import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
+import { CartService } from 'src/cart/cart.service';
+import { ListDto } from 'src/dto/list.dto';
+import { CartEntry } from 'src/cart/entities/cart.entity';
+import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
 
 @Injectable()
 export class AccountService {
@@ -16,6 +18,7 @@ export class AccountService {
     private readonly usersService: UsersService,
     private readonly factoryService: FactoriesService,
     private readonly shopService: ShopsService,
+    private readonly cartService: CartService,
   ) {}
 
   async profile(id: string): Promise<ProfileDto> {
@@ -44,11 +47,18 @@ export class AccountService {
     };
   }
 
-  updateAvatar(
-    id: string,
-    file: Express.Multer.File,
-  ): string | PromiseLike<string> {
-    return this.usersService.updateAvatar(id, file);
+  async cart(userId: string): Promise<ListDto<CartEntry>> {
+    const entries = await this.cartService.findAll({ userId });
+    return entries;
+  }
+
+  async addToCart(dto: CreateCartEntryDto) {
+    const e = await this.cartService.create(dto);
+    return e;
+  }
+
+  async removeFromCart(userId: string, catalogueId: string) {
+    await this.cartService.remove(userId, catalogueId);
   }
 
   async createFactory(
@@ -67,7 +77,7 @@ export class AccountService {
     return r;
   }
 
-  async getFactories(id: string): Promise<ListDto<Factory>> {
-    return await this.factoryService.findAll({ ownerId: id });
-  }
+  // async getFactories(id: string): Promise<ListDto<Factory>> {
+  //   return await this.factoryService.findAll({ ownerId: id });
+  // }
 }

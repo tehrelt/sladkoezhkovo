@@ -21,6 +21,7 @@ import { ProductsModule } from './products/products.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { SearchModule } from './search/search.module';
 import { ShopsModule } from './shops/shops.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ShopsModule } from './shops/shops.module';
     CatalogueModule,
     SearchModule,
     ShopsModule,
+    CartModule,
   ],
   controllers: [],
   providers: [],

@@ -45,6 +45,17 @@ export class ProductsService {
     });
   }
 
+  async getProductImage(id: string) {
+    const p = await this.prisma.product.findUnique({
+      where: { id },
+      select: { image: { select: { name: true } } },
+    });
+
+    return p.image
+      ? await this.minio.getFileUrl(p.image.name, Bucket.PRODUCT)
+      : undefined;
+  }
+
   async findAll(
     filters?: FiltersDto & Prisma.ProductWhereInput,
   ): Promise<ListDto<Product>> {
@@ -125,6 +136,7 @@ export class ProductsService {
         id: e.id,
         price: e.price,
         package: e.package,
+        unitUsage: e.unitUsage,
       })),
     };
   }

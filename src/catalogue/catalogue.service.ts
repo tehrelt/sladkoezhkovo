@@ -21,6 +21,7 @@ export class CatalogueService {
       data: {
         id,
         price: dto.price,
+        unitUsage: dto.unitUsage,
         product: { connect: { id: dto.productId } },
         package: { connect: { id: dto.packageId } },
       },
@@ -55,6 +56,7 @@ export class CatalogueService {
         id: e.id,
         price: e.price,
         productId: e.product.id,
+        unitUsage: e.unitUsage,
         package: e.package,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
@@ -63,8 +65,28 @@ export class CatalogueService {
     };
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} catalogue`;
+  async findOne(id: string): Promise<CatalogueEntry> {
+    const entry = await this.prisma.catalogueEntry.findFirst({
+      where: { id },
+      include: {
+        product: true,
+        package: {
+          include: {
+            unit: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: entry.id,
+      price: entry.price,
+      productId: entry.product.id,
+      package: entry.package,
+      unitUsage: entry.unitUsage,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
+    };
   }
 
   update(id: string, dto: UpdateCatalogueDto) {

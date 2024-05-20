@@ -6,6 +6,7 @@ export class CatalogueEntry {
   productId: string;
   package: Package;
   price: Decimal;
+  unitUsage: number;
   createdAt: Date;
   updatedAt: Date;
 }
