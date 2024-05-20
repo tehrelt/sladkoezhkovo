@@ -29,13 +29,17 @@ export class PackagesService {
         where,
         skip,
         take,
+        include: { unit: true },
       }),
       count: await this.prisma.package.count({ where }),
     };
   }
 
   findOne(id: string) {
-    return this.prisma.package.findUnique({ where: { id } });
+    return this.prisma.package.findUnique({
+      where: { id },
+      include: { unit: true },
+    });
   }
 
   update(id: string, dto: UpdatePackageDto) {

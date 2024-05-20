@@ -20,6 +20,7 @@ import { UploadFile } from 'src/decorators/upload.decorator';
 import { CreateFactoryDto } from './dto/create-factory.dto';
 import { ListDto } from 'src/dto/list.dto';
 import { Factory } from 'src/factories/entities/factory.entity';
+import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
 
 @ApiTags('Аккаунт пользователя')
 @Controller('account')
@@ -65,6 +66,29 @@ export class AccountController {
     return await this.service.createFactory(
       id,
       { ...dto, year: Number(dto.year) },
+      file,
+    );
+  }
+
+  @Post('/add-shop')
+  @ApiOperation({ summary: 'Добавление нового магазина' })
+  @RequiredAuth('SHOP_OWNER')
+  @UsePipes(ValidationPipe)
+  @UploadFile('file')
+  @ApiResponse({ status: 200 })
+  async addShop(
+    @User('id') id: string,
+    @Body() dto: CreateShopDto,
+    @UploadedFile('file') file?: Express.Multer.File,
+  ) {
+    this.logger.verbose('adding shop', { dto });
+    return await this.service.createShop(
+      id,
+      {
+        ...dto,
+        employeesCount: Number(dto.employeesCount),
+        openSince: Number(dto.openSince),
+      },
       file,
     );
   }

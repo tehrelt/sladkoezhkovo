@@ -27,10 +27,15 @@ export class DistrictsController {
 
   @Get()
   @RequiredAuth()
-  findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
+  findAll(
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+    @Query('cityId') cityId?: string,
+  ) {
     return this.service.findAll({
       take: limit ? +limit : undefined,
       skip: page && limit ? +page * +limit : undefined,
+      cityId,
     });
   }
 

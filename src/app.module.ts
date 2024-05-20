@@ -20,6 +20,7 @@ import { FactoriesModule } from './factories/factories.module';
 import { ProductsModule } from './products/products.module';
 import { CatalogueModule } from './catalogue/catalogue.module';
 import { SearchModule } from './search/search.module';
+import { ShopsModule } from './shops/shops.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { SearchModule } from './search/search.module';
     ProductsModule,
     CatalogueModule,
     SearchModule,
+    ShopsModule,
   ],
   controllers: [],
   providers: [],

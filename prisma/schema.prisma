@@ -39,21 +39,24 @@ model ConfectionaryType {
 }
 
 model Package {
-  id             String           @id
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime?        @map("updated_at")
-  name           String           @unique
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  name      String    @unique
+  unitId    String
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
   CatalogueEntry CatalogueEntry[]
 
   @@map("packages")
 }
 
 model Unit {
-  id               String           @id
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime?        @map("updated_at")
-  name             String           @unique
-  catalogueEntries CatalogueEntry[]
+  id        String    @id
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+  name      String    @unique
+  Package   Package[]
 
   @@map("units")
 }
@@ -99,6 +102,7 @@ model Product {
   confectionaryTypeId String            @map("confectionary_type_id")
   factoryId           String            @map("factory_id")
   imageId             String?           @map("image_id")
+  weight              Decimal
   image               Image?            @relation(fields: [imageId], references: [id])
   catalogueEntries    CatalogueEntry[]
   confectionaryType   ConfectionaryType @relation(fields: [confectionaryTypeId], references: [id], onDelete: Cascade)
@@ -113,15 +117,12 @@ model CatalogueEntry {
   updatedAt DateTime?       @map("updated_at")
   productId String          @map("product_id")
   packageId String          @map("package_id")
-  unitId    String?         @map("unit_id")
   price     Decimal         @map("price")
-  quantity  Int             @map("quantity")
-  weight    Decimal         @map("weight")
   package   Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  unit      Unit?           @relation(fields: [unitId], references: [id])
   shipments ShipmentEntry[]
 
+  @@unique([productId, packageId])
   @@map("catalogue")
 }
 
@@ -161,6 +162,8 @@ model ShipmentEntry {
   updatedAt   DateTime?      @map("updated_at")
   shipmentId  String         @map("shipment_id")
   catalogueId String         @map("catalogue_id")
+  units       BigInt
+  cost        Decimal
   entry       CatalogueEntry @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
   shipment    Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 

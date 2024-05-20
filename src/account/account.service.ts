@@ -5,6 +5,8 @@ import { Factory } from 'src/factories/entities/factory.entity';
 import { FactoriesService } from 'src/factories/factories.service';
 import { UsersService } from 'src/users/users.service';
 import { CreateFactoryDto } from './dto/create-factory.dto';
+import { ShopsService } from 'src/shops/shops.service';
+import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
 
 @Injectable()
 export class AccountService {
@@ -13,6 +15,7 @@ export class AccountService {
   constructor(
     private readonly usersService: UsersService,
     private readonly factoryService: FactoriesService,
+    private readonly shopService: ShopsService,
   ) {}
 
   async profile(id: string): Promise<ProfileDto> {
@@ -55,6 +58,12 @@ export class AccountService {
   ) {
     const r = await this.factoryService.create({ ...dto, ownerId: id, file });
     this.logger.debug('factory created', r);
+    return r;
+  }
+
+  async createShop(id: string, dto: CreateShopDto, file?: Express.Multer.File) {
+    const r = await this.shopService.create({ ...dto, ownerId: id, file });
+    this.logger.debug('shop created', r);
     return r;
   }
 

@@ -66,8 +66,6 @@ export class FactoriesService {
   async findAll(
     filters?: FiltersDto & Prisma.FactoryWhereInput,
   ): Promise<ListDto<Factory>> {
-    this.logger.verbose(`Getting all factories`, { filters });
-
     const { skip, take, ...where } = filters;
 
     const items = await this.prisma.factory.findMany({

@@ -37,6 +37,7 @@ export class ProductsService {
         name: dto.name,
         confectionaryType: { connect: { id: dto.confectionaryTypeId } },
         factory: { connect: { id: dto.factoryId } },
+        weight: dto.weight,
         image: image
           ? { create: { id: image.id, name: image.fileName } }
           : undefined,
@@ -47,8 +48,6 @@ export class ProductsService {
   async findAll(
     filters?: FiltersDto & Prisma.ProductWhereInput,
   ): Promise<ListDto<Product>> {
-    this.logger.verbose(`Finding all products`, filters);
-
     const { skip, take, ...where } = filters;
 
     const products = await this.prisma.product.findMany({
@@ -85,6 +84,7 @@ export class ProductsService {
             ? await this.minio.getFileUrl(p.image.name, Bucket.PRODUCT)
             : undefined,
           catalogueEntries: p.catalogueEntries,
+          weight: p.weight,
         };
 
         return d;
@@ -104,7 +104,7 @@ export class ProductsService {
         image: true,
         factory: true,
         confectionaryType: true,
-        catalogueEntries: { include: { package: true, unit: true } },
+        catalogueEntries: { include: { package: { include: { unit: true } } } },
       },
     });
 
@@ -120,11 +120,10 @@ export class ProductsService {
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
       image,
+      weight: product.weight,
       catalogueEntries: product.catalogueEntries.map((e) => ({
         id: e.id,
         price: e.price,
-        quantity: e.quantity,
-        unit: e.unit,
         package: e.package,
       })),
     };

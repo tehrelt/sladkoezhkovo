@@ -22,10 +22,10 @@ export class SearchService {
     const users = await this.userService.findAll({
       OR: [
         {
-          handle: { contains: dto.query },
+          handle: { contains: dto.query, mode: 'insensitive' },
         },
         {
-          lastName: { contains: dto.query },
+          lastName: { contains: dto.query, mode: 'insensitive' },
         },
       ],
     });
@@ -40,8 +40,8 @@ export class SearchService {
 
     const factories = await this.factoryService.findAll({
       OR: [
-        { name: { contains: dto.query } },
-        { handle: { contains: dto.query } },
+        { name: { contains: dto.query, mode: 'insensitive' } },
+        { handle: { contains: dto.query, mode: 'insensitive' } },
       ],
     });
 
@@ -52,7 +52,7 @@ export class SearchService {
     }));
 
     const products = await this.productService.findAll({
-      OR: [{ name: { contains: dto.query } }],
+      OR: [{ name: { contains: dto.query, mode: 'insensitive' } }],
     });
 
     const pp: ProductResult[] = products.items.map((p) => ({

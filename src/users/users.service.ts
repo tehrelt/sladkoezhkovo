@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isEmail, isUUID } from 'class-validator';
@@ -8,6 +13,7 @@ import { Bucket } from 'src/minio/minio.consts';
 import { Prisma } from '@prisma/client';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { ROLE } from 'src/enum/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -115,6 +121,50 @@ export class UsersService {
     return await this.minio.getFileUrl(fileName, Bucket.USER);
   }
 
+  async getOwnerships(slug: string) {
+    const u = await this.prisma.user.findFirst({
+      where: { OR: [{ handle: slug }, { id: slug }] },
+      include: {
+        factories: { orderBy: { createdAt: 'asc' }, include: { image: true } },
+        shops: { orderBy: { createdAt: 'asc' }, include: { image: true } },
+      },
+    });
+
+    const roles: ROLE[] = ['FACTORY_OWNER', 'SHOP_OWNER'];
+
+    if (!u) {
+      throw new NotFoundException();
+    }
+
+    if (!roles.includes(u.role)) {
+      throw new BadRequestException(
+        'Пользователь не является владельцем фабрики или магазина',
+      );
+    }
+
+    const ownership = await Promise.all(
+      u.role === 'FACTORY_OWNER'
+        ? u.factories.map(async (i) => ({
+            name: i.name,
+            handle: i.handle,
+            image: i.image
+              ? await this.minio.getFileUrl(i.image.name, Bucket.FACTORY)
+              : undefined,
+          }))
+        : u.shops.map(async (i) => ({
+            name: i.name,
+            handle: i.handle,
+            image: i.image
+              ? await this.minio.getFileUrl(i.image.name, Bucket.SHOP)
+              : undefined,
+          })),
+    );
+
+    this.logger.verbose('ownerships', { ownership });
+
+    return { items: ownership };
+  }
+
   async getAvatarLink(fileName: string): Promise<string> {
     this.logger.verbose('getting avatar link', { fileName });
     const link = await this.minio.getFileUrl(fileName, Bucket.USER);
@@ -122,12 +172,25 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto) {
-    return await this.prisma.user.update({
+    const { file, ...u } = dto;
+
+    const image = file
+      ? await this.minio.uploadFile(dto.file, Bucket.USER)
+      : undefined;
+
+    this.logger.verbose('updating user', { u, image });
+
+    const f = await this.prisma.user.update({
+      where: { id },
       data: {
-        ...dto,
+        ...u,
+        image: file
+          ? { create: { id: image.id, name: image.fileName } }
+          : undefined,
         updatedAt: new Date(),
       },
-      where: { id },
     });
+
+    return f;
   }
 }

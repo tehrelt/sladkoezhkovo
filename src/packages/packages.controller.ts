@@ -21,8 +21,8 @@ export class PackagesController {
 
   @Post()
   @RequiredAuth('ADMIN')
-  create(@Body() createPackageDto: CreatePackageDto) {
-    return this.service.create(createPackageDto);
+  create(@Body() dto: CreatePackageDto) {
+    return this.service.create(dto);
   }
 
   @Get()

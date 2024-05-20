@@ -6,14 +6,15 @@ import {
   Param,
   Patch,
   Query,
+  UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiTags } from '@nestjs/swagger';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 import { User } from './entities/user.entity';
 import { ListDto } from 'src/dto/list.dto';
-import { ROLE } from 'src/enum/role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UploadFile } from 'src/decorators/upload.decorator';
 
 @ApiTags('Пользователи')
 @Controller('users')
@@ -74,9 +75,20 @@ export class UsersController {
     };
   }
 
+  @Get(':id/ownerships')
+  @RequiredAuth()
+  async ownership(@Param('id') id: string) {
+    return await this.service.getOwnerships(id);
+  }
+
   @Patch(':id')
-  @RequiredAuth('ADMIN')
-  update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
-    return this.service.update(id, dto);
+  @RequiredAuth()
+  @UploadFile('file')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile('file') file?: Express.Multer.File,
+  ) {
+    return this.service.update(id, { ...dto, file });
   }
 }

@@ -21,10 +21,8 @@ export class CatalogueService {
       data: {
         id,
         price: dto.price,
-        quantity: dto.quantity,
         product: { connect: { id: dto.productId } },
         package: { connect: { id: dto.packageId } },
-        unit: { connect: { id: dto.unitId } },
       },
     });
 
@@ -42,8 +40,11 @@ export class CatalogueService {
       take,
       include: {
         product: true,
-        package: true,
-        unit: true,
+        package: {
+          include: {
+            unit: true,
+          },
+        },
       },
     });
 
@@ -55,8 +56,6 @@ export class CatalogueService {
         price: e.price,
         productId: e.product.id,
         package: e.package,
-        unit: e.unit,
-        quantity: e.quantity,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       })),
