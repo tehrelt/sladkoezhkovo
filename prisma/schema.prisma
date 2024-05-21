@@ -154,6 +154,7 @@ model Shipment {
   shopId        String          @map("shop_id")
   ShipmentEntry ShipmentEntry[]
   shop          Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  Notification  Notification[]
 
   @@map("shipments")
 }
@@ -228,6 +229,17 @@ model Application {
   updatedAt DateTime? @map("updated_at")
 
   @@map("applications")
+}
+
+model Notification {
+  id         String    @id
+  shipmentId String    @map("shipment_id")
+  read       Boolean   @default(false)
+  shipment   Shipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @map("updated_at")
+
+  @@map("notifications")
 }
 
 model Cart {

@@ -25,6 +25,7 @@ import { Factory } from 'src/factories/entities/factory.entity';
 import { CreateShopDto } from 'src/shops/dto/create-shop.dto';
 import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
 import { UpdateCartEntryDto } from 'src/cart/dto/update-cart.dto';
+import { BuyCartDto } from './dto/buy.dto';
 
 @ApiTags('Аккаунт пользователя')
 @Controller('account')
@@ -89,6 +90,16 @@ export class AccountController {
   ) {
     this.logger.verbose('removing from cart', { userId, catalogueId });
     await this.service.removeFromCart(userId, catalogueId);
+  }
+
+  @Post('/cart/buy')
+  @ApiOperation({ summary: 'Покупка товара' })
+  @RequiredAuth()
+  @UsePipes(ValidationPipe)
+  @ApiResponse({ status: 200 })
+  async buy(@User('id') userId: string, @Body() dto: { shop: string }) {
+    this.logger.verbose('buying', { userId, dto });
+    return await this.service.buy({ ...dto, userId });
   }
 
   @Post('/add-factory')

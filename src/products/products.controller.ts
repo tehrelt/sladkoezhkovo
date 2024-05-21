@@ -14,7 +14,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
 import { UploadFile } from 'src/decorators/upload.decorator';
-import { User } from 'src/auth/decorators/user.decorator';
 
 @Controller('products')
 export class ProductsController {

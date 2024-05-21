@@ -22,6 +22,8 @@ import { CatalogueModule } from './catalogue/catalogue.module';
 import { SearchModule } from './search/search.module';
 import { ShopsModule } from './shops/shops.module';
 import { CartModule } from './cart/cart.module';
+import { ShipmentsModule } from './shipments/shipments.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { CartModule } from './cart/cart.module';
     SearchModule,
     ShopsModule,
     CartModule,
+    ShipmentsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

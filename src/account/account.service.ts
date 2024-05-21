@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ProfileDto } from 'src/auth/dto/profile.dto';
 import { FactoriesService } from 'src/factories/factories.service';
 import { UsersService } from 'src/users/users.service';
@@ -10,6 +15,9 @@ import { ListDto } from 'src/dto/list.dto';
 import { CartEntry } from 'src/cart/entities/cart.entity';
 import { CreateCartEntryDto } from 'src/cart/dto/create-cart.dto';
 import { UpdateCartEntryDto } from 'src/cart/dto/update-cart.dto';
+import { ShipmentsService } from 'src/shipments/shipments.service';
+import { BuyCartDto } from './dto/buy.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AccountService {
@@ -20,6 +28,7 @@ export class AccountService {
     private readonly factoryService: FactoriesService,
     private readonly shopService: ShopsService,
     private readonly cartService: CartService,
+    private readonly shipmentsService: ShipmentsService,
   ) {}
 
   async profile(id: string): Promise<ProfileDto> {
@@ -67,6 +76,27 @@ export class AccountService {
     await this.cartService.remove(userId, catalogueId);
   }
 
+  async buy(dto: BuyCartDto) {
+    const cart = await this.cart(dto.userId);
+
+    try {
+      this.shipmentsService.create({
+        shop: dto.shop,
+        entries: cart.items.map((i) => ({
+          catalogueId: i.catalogueEntry.id,
+          quantity: i.quantity,
+          cost: Prisma.Decimal.mul(i.catalogueEntry.price, i.quantity),
+        })),
+      });
+    } catch (e) {
+      throw new InternalServerErrorException(e.message);
+    }
+
+    cart.items.forEach((i) =>
+      this.removeFromCart(dto.userId, i.catalogueEntry.id),
+    );
+  }
+
   async createFactory(
     id: string,
     dto: CreateFactoryDto,
@@ -82,8 +112,4 @@ export class AccountService {
     this.logger.debug('shop created', r);
     return r;
   }
-
-  // async getFactories(id: string): Promise<ListDto<Factory>> {
-  //   return await this.factoryService.findAll({ ownerId: id });
-  // }
 }
