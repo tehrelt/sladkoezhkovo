@@ -7,6 +7,7 @@ import { District } from './entities/district.entity';
 import { Prisma } from '@prisma/client';
 import { ListDto } from 'src/dto/list.dto';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @Injectable()
 export class DistrictsService {
@@ -72,6 +73,27 @@ export class DistrictsService {
         city: { connect: { id: dto.cityId } },
       },
     });
+  }
+
+  async deps(id: string): Promise<DepsDto> {
+    const r = await this.prisma.district.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            shops: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: r.id,
+      name: r.name,
+      count: r._count.shops,
+    };
   }
 
   remove(id: string) {

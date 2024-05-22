@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ListDto } from 'src/dto/list.dto';
 import { ConfectionaryType } from './entities/confectionarytype.entity';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @Injectable()
 export class ConfectionaryTypesService {
@@ -40,6 +41,26 @@ export class ConfectionaryTypesService {
 
   update(id: string, dto: UpdateConfectionarytypeDto) {
     return this.prisma.confectionaryType.update({ where: { id }, data: dto });
+  }
+  async deps(id: string): Promise<DepsDto> {
+    const r = await this.prisma.confectionaryType.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: r.id,
+      name: r.name,
+      count: r._count.products,
+    };
   }
 
   remove(id: string) {

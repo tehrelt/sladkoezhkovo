@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { ListDto } from 'src/dto/list.dto';
 import { Unit } from './entities/unit.entity';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @Injectable()
 export class UnitsService {
@@ -41,6 +42,27 @@ export class UnitsService {
 
   update(id: string, dto: UpdateUnitDto) {
     return this.prisma.unit.update({ where: { id }, data: dto });
+  }
+
+  async deps(id: string): Promise<DepsDto> {
+    const r = await this.prisma.unit.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            Package: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: r.id,
+      name: r.name,
+      count: r._count.Package,
+    };
   }
 
   remove(id: string) {

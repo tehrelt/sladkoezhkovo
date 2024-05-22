@@ -54,6 +54,12 @@ export class DistrictsController {
     return this.service.update(id, updateDistrictDto);
   }
 
+  @Get(':id/deps')
+  @RequiredAuth('ADMIN', 'MODERATOR')
+  deps(@Param('id') id: string) {
+    return this.service.deps(id);
+  }
+
   @Delete(':id')
   @RequiredAuth('ADMIN', 'MODERATOR')
   remove(@Param('id') id: string) {

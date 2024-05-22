@@ -46,6 +46,12 @@ export class PackagesController {
     return this.service.update(id, updatePackageDto);
   }
 
+  @Get(':id/deps')
+  @RequiredAuth('ADMIN', 'MODERATOR')
+  deps(@Param('id') id: string) {
+    return this.service.deps(id);
+  }
+
   @Delete(':id')
   @RequiredAuth('ADMIN')
   remove(@Param('id') id: string) {

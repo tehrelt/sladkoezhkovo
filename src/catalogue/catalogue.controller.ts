@@ -50,7 +50,6 @@ export class CatalogueController {
         id: { in: packagesId },
       },
     });
-    this.logger.verbose(`Catalogue findAll:`, r);
     return r;
   }
 

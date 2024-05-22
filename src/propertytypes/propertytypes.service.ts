@@ -7,6 +7,7 @@ import { PropertyType } from './entities/propertytype.entity';
 import { ListDto } from 'src/dto/list.dto';
 import { Prisma } from '@prisma/client';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @Injectable()
 export class PropertyTypesService {
@@ -49,6 +50,27 @@ export class PropertyTypesService {
       where: { id },
       data: { ...dto },
     });
+  }
+
+  async deps(id: string): Promise<DepsDto> {
+    const r = await this.prisma.propertyType.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            factories: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: r.id,
+      name: r.name,
+      count: r._count.factories,
+    };
   }
 
   async remove(id: string) {

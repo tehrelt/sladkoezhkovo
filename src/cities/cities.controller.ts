@@ -1,26 +1,33 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import { CitiesService } from './cities.service';
 import { CreateCityDto } from './dto/create-city.dto';
 import { RequiredAuth } from 'src/auth/decorators/auth.decorator';
-import { ListDto } from 'src/dto/list.dto';
-import { City } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @ApiTags('Города')
 @Controller('cities')
 export class CitiesController {
-  constructor(private readonly citiesService: CitiesService) {}
+  constructor(private readonly services: CitiesService) {}
 
   @Post()
   @RequiredAuth('ADMIN')
   create(@Body() createCityDto: CreateCityDto) {
-    return this.citiesService.create(createCityDto);
+    return this.services.create(createCityDto);
   }
 
   @Get()
   @RequiredAuth()
   findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
-    return this.citiesService.findAll({
+    return this.services.findAll({
       take: limit ? +limit : undefined,
       skip: page && limit ? +page * +limit : undefined,
     });
@@ -29,6 +36,18 @@ export class CitiesController {
   @Get(':id')
   @RequiredAuth()
   findOne(@Param('id') id: string) {
-    return this.citiesService.findOne(id);
+    return this.services.findOne(id);
+  }
+
+  @Get(':id/deps')
+  @RequiredAuth('ADMIN', 'MODERATOR')
+  async deps(@Param('id') id: string): Promise<DepsDto> {
+    return await this.services.deps(id);
+  }
+
+  @Delete(':id')
+  @RequiredAuth('ADMIN', 'MODERATOR')
+  remove(@Param('id') id: string) {
+    return this.services.remove(id);
   }
 }

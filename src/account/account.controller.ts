@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   Delete,
   Param,
+  Query,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -141,6 +142,22 @@ export class AccountController {
       },
       file,
     );
+  }
+
+  @Get('/shipments/shop')
+  @ApiOperation({ summary: 'Получение всех доставок' })
+  @RequiredAuth()
+  @ApiResponse({ status: 200 })
+  async getShipments(
+    @User('id') userId: string,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+  ) {
+    this.logger.verbose('getting shipments', { userId });
+    return await this.service.getShipments(userId, {
+      take: limit ? +limit : undefined,
+      skip: page && limit ? +page * +limit : undefined,
+    });
   }
 
   // @Get('/factories')

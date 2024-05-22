@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ListDto } from 'src/dto/list.dto';
 import { City, Prisma } from '@prisma/client';
 import { FiltersDto } from 'src/dto/filters.dto';
+import { DepsDto } from 'src/dto/deps.dto';
 
 @Injectable()
 export class CitiesService {
@@ -50,5 +51,31 @@ export class CitiesService {
     this.logger.verbose('getting a city', { id });
 
     return await this.prisma.city.findUnique({ where: { id } });
+  }
+
+  async deps(id: string): Promise<DepsDto> {
+    const r = await this.prisma.city.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            districts: true,
+            factories: true,
+          },
+        },
+      },
+    });
+
+    return {
+      id: r.id,
+      name: r.name,
+      count: r._count.districts + r._count.factories,
+    };
+  }
+
+  remove(id: string) {
+    return this.prisma.city.delete({ where: { id } });
   }
 }

@@ -18,6 +18,7 @@ import { UpdateCartEntryDto } from 'src/cart/dto/update-cart.dto';
 import { ShipmentsService } from 'src/shipments/shipments.service';
 import { BuyCartDto } from './dto/buy.dto';
 import { Prisma } from '@prisma/client';
+import { FiltersDto } from 'src/dto/filters.dto';
 
 @Injectable()
 export class AccountService {
@@ -95,6 +96,10 @@ export class AccountService {
     cart.items.forEach((i) =>
       this.removeFromCart(dto.userId, i.catalogueEntry.id),
     );
+  }
+
+  async getShipments(userId: string, f?: FiltersDto) {
+    return await this.shipmentsService.listWithTotal(userId, f);
   }
 
   async createFactory(
