@@ -21,7 +21,7 @@ export class NotificationsService {
   async markAsRead(...ids: string[]) {
     return await this.prisma.notification.updateMany({
       where: { id: { in: ids } },
-      data: { read: true },
+      data: { read: true, updatedAt: new Date() },
     });
   }
 

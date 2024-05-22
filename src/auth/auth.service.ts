@@ -15,6 +15,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { hash, compare } from 'bcryptjs';
 import { isEmail } from 'class-validator';
 import { UserClaims } from './dto/user-claims.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 const SALT = Number(process.env.BCRYPT_SALT);
 
@@ -86,9 +87,6 @@ export class AuthService implements OnModuleInit {
     this.logger.verbose(`user found`, user);
 
     if (!(await compare(dto.password, user.password))) {
-      this.logger.debug(
-        `invalid password user=${JSON.stringify(dto)} user.password=${user.password}`,
-      );
       throw new BadRequestException('invalid login or password');
     }
 
@@ -117,6 +115,25 @@ export class AuthService implements OnModuleInit {
       this.logger.error('bad refresh token', e);
       throw new ForbiddenException('bad refresh token');
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      this.logger.debug(`user not found, user=${JSON.stringify(dto)}`);
+      throw new NotFoundException('user not found');
+    }
+
+    this.logger.verbose(`user found`, user);
+
+    if (!(await compare(dto.oldPassword, user.password))) {
+      throw new BadRequestException('invalid login or password');
+    }
+
+    const hashPassword = await hash(dto.newPassword, SALT);
+
+    await this.usersService.update(userId, { password: hashPassword });
   }
 
   async generateTokens(dto: UserClaims) {

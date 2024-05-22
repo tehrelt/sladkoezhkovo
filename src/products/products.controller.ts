@@ -30,7 +30,7 @@ export class ProductsController {
   }
 
   @Get()
-  @RequiredAuth('ADMIN', 'MODERATOR')
+  @RequiredAuth('ADMIN', 'MODERATOR', 'SHOP_OWNER')
   findAll(@Query('limit') limit?: string, @Query('page') page?: string) {
     return this.service.findAll({
       take: limit ? +limit : undefined,

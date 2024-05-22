@@ -30,16 +30,28 @@ export class CatalogueController {
   }
 
   @Get()
-  findAll(
+  async findAll(
     @Query('limit') limit?: string,
     @Query('page') page?: string,
     @Query('productId') productId?: string,
+    @Query('confectionaryTypeId') confectionaryTypeId?: string[],
+    @Query('packagesId') packagesId?: string[],
   ) {
-    return this.catalogueService.findAll({
+    const r = await this.catalogueService.findAll({
       take: limit ? +limit : undefined,
       skip: page && limit ? +page * +limit : undefined,
       productId,
+      product: {
+        confectionaryType: {
+          id: { in: confectionaryTypeId },
+        },
+      },
+      package: {
+        id: { in: packagesId },
+      },
     });
+    this.logger.verbose(`Catalogue findAll:`, r);
+    return r;
   }
 
   @Get(':id')

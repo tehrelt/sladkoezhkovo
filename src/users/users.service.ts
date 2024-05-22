@@ -41,10 +41,7 @@ export class UsersService {
     });
   }
 
-  async findAll(
-    filters?: FiltersDto & Prisma.UserWhereInput,
-    select?: Prisma.UserSelect,
-  ) {
+  async findAll(filters?: FiltersDto & Prisma.UserWhereInput) {
     const { skip, take, ...where } = filters;
 
     const users = await this.prisma.user.findMany({
